@@ -1,0 +1,6 @@
+test01:
+    name: "&aTest Arena"
+    builder: "XAP3Y"
+    spawn: world;100;100;100;0;0
+    water-kill: true
+    boosters: false

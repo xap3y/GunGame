@@ -1,0 +1,158 @@
+plugins {
+    id 'com.gradleup.shadow' version '9.2.2'
+    id 'io.freefair.lombok' version '8.7.1'
+    id "net.kyori.blossom" version "1.3.1"
+    id 'java'
+}
+
+group = 'eu.xap3y'
+version = "${version}".replaceAll("\'", "").replaceAll("\"", "")
+
+def commandBase = "${permissionNode.replaceAll("\'", "").replaceAll("\"", "")}|alias"
+def mainCommand = "${permissionNode.replaceAll("\'", "").replaceAll("\"", "")}"
+
+def gitHash = {
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-parse', '--short', 'HEAD'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim()
+    } catch (Exception e) {
+        return "unknown"
+    }
+}
+
+blossom {
+    replaceToken("@VERSION@", version)
+    replaceToken("@GIT_HASH@", gitHash())
+    replaceToken("@GIT_URL@", gitUrl)
+    replaceToken("@PERMISSION_NODE@", permissionNode)
+    replaceToken("@COMMAND_BASE@", commandBase)
+    replaceToken("@MAIN_COMMAND@", mainCommand)
+}
+
+repositories {
+    mavenCentral()
+    //mavenLocal()
+    maven {
+        name = "papermc-repo"
+        url = "https://repo.papermc.io/repository/maven-public/"
+    }
+
+    maven {
+        name = "sonatype"
+        url = "https://oss.sonatype.org/content/groups/public/"
+    }
+
+    maven {
+        url = "https://jitpack.io"
+    }
+
+    maven {
+        url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
+    }
+}
+
+def usePapi = project.hasProperty("usePapi") && project.usePapi.toBoolean()
+def useGui = project.hasProperty("useXaGui") && project.useXaGui.toBoolean()
+def useStats = project.hasProperty("useBStats") && project.useBStats.toBoolean()
+def useGson = project.hasProperty("useGson") && project.useGson.toBoolean()
+def useVault = project.hasProperty("useVault") && project.useVault.toBoolean()
+def useLuckPerms = project.hasProperty("useLuckPerms") && project.useLuckPerms.toBoolean()
+
+dependencies {
+    compileOnly "io.papermc.paper:paper-api:${paperVersion ?: '1.21.10'}-R0.1-SNAPSHOT".replaceAll("\'", "")
+    implementation "org.incendo:cloud-annotations:${cloudAnnotationsVersion ?: '2.0.0'}".replaceAll("\'", "")
+    implementation "org.incendo:cloud-paper:${cloudPaperVersion ?: '2.0.0-beta.14'}".replaceAll("\'", "")
+
+
+    if (usePapi) {
+        compileOnly "me.clip:placeholderapi:${papiVersion ?: '2.11.6'}".replaceAll("\'", "")
+    }
+    implementation "eu.xap3y:xagui:${xaGuiVersion ?: '1.3.2'}".replaceAll("\'", "")
+    if (useStats) {
+        implementation "org.bstats:bstats-bukkit:${bStatsVersion ?: '3.0.1'}".replaceAll("\'", "")
+    }
+    if (useGson) {
+        implementation "com.google.code.gson:gson:${gsonVersion ?: '2.10.1'}".replaceAll("\'", "")
+    }
+    if (useVault) {
+        compileOnly "net.milkbowl.vault:VaultAPI:${vaultVersion ?: '1.7'}".replaceAll("\'", "")
+    }
+    if (useLuckPerms) {
+        compileOnly "net.luckperms:api:${luckPermsVersion ?: '5.4'}".replaceAll("\'", "")
+    }
+    implementation 'fr.mrmicky:fastboard:2.1.5'
+    implementation("com.github.cryptomorin:XSeries:13.6.0")
+}
+
+def targetJavaVersion = javaVersion.replaceAll("\'", "").replaceAll("\"", "").toInteger() ?: 21
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release.set(targetJavaVersion)
+    }
+}
+
+processResources {
+    def props = [
+            version: version.replaceAll("\'", "").replaceAll("\"", ""),
+            gitHash: gitHash(),
+            permissionNode: permissionNode.replaceAll("\'", "").replaceAll("\"", ""),
+            commandBase: commandBase,
+            mainCommand: mainCommand,
+            baseCoordinates: baseCoordinates.replaceAll("\'", "").replaceAll("\"", ""),
+            mainClass: "${project.group}.${baseCoordinates.replaceAll("\'", "").replaceAll("\"", "").toLowerCase()}.${baseCoordinates.replaceAll("\'", "").replaceAll("\"", "")}"
+    ]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+}
+
+build {
+    dependsOn(shadowJar)
+}
+
+tasks.jar {
+    enabled = false
+}
+
+tasks {
+    shadowJar {
+        archiveClassifier.set('')
+        archiveBaseName.set(baseCoordinates.replaceAll("\"", ""))
+
+        if (useStats) {
+            relocate 'org.bstats', "${group}.${baseCoordinates.replaceAll("\"", "").toLowerCase()}.util.bstats"
+        }
+
+        relocate 'com.cryptomorin.xseries', "${group}.${baseCoordinates.replaceAll("\"", "").toLowerCase()}.util.xseries"
+
+        mergeServiceFiles()
+        dependencies {
+            exclude(dependency('io.papermc.paper:paper-api'))
+        }
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+        exclude '**/module-info.class'
+        exclude '**/*.kotlin_metadata', '**/*.kotlin_builtins'
+        exclude 'META-INF/*.kotlin_module', 'META-INF/*.version', 'META-INF/versions/**'
+        exclude '**/package-info.class'
+        exclude 'META-INF/signatures/**'
+        exclude '**/*Test*', '**/test/**', '**/tests/**', '**/*Example*', '**/samples/**', '**/javadoc/**'
+        exclude '**/i18n/**', '**/locale/**', '**/locales/**', '**/messages/**'
+    }
+}

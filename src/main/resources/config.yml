@@ -1,0 +1,9 @@
+
+prefix: "&7[&6GunGame&7] &r"
+
+database:
+    host: "localhost"
+    port: 3306
+    name: "gungame_db"
+    user: "root"
+    password: "password123"
