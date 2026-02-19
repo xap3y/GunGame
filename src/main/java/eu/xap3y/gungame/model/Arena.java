@@ -5,11 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -17,11 +13,16 @@ import java.util.UUID;
 public class Arena implements ArenaInterface {
 
     private String arenaName;
+    private boolean enabled = true;
     private String builder;
     private double rating; // 0.0 - 5.0
     private Location spawn;
 
-    private final boolean allowBoosters = false;
-    private final boolean waterKills = true;
+    private boolean allowBoosters = false;
+    private boolean waterKills = true;
 
+    public Arena(String name, Location loc) {
+        this.arenaName = name;
+        this.spawn = loc;
+    }
 }

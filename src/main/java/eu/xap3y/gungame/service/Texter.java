@@ -1,6 +1,7 @@
 package eu.xap3y.gungame.service;
 
 import eu.xap3y.gungame.GunGame;
+import eu.xap3y.gungame.adapter.PaperAdapter;
 import eu.xap3y.gungame.api.dto.TextModifierDto;
 import eu.xap3y.gungame.api.dto.TexterObjDto;
 import eu.xap3y.gungame.api.enums.DefaultFontInfo;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.logging.Level;
 
 @SuppressWarnings({"deprecation", "ResultOfMethodCallIgnored"})
@@ -44,13 +46,33 @@ public class Texter {
     }
 
     public void responseLang(CommandSender p0, String path) {
+        responseLang(p0, path, null);
+    }
+
+    public void responseLang(CommandSender p0, String path, @Nullable Map<String, String> placeholders) {
         String prefix = colored(data.getPrefix());
         String textToSend = colored(GunGame.getInstance().getLangManager().get(path));
+        if (placeholders != null) {
+            for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+                textToSend = textToSend.replace("{" + entry.getKey() + "}", entry.getValue());
+            }
+        }
         String finalText = prefix + textToSend;
         if (GunGame.getInstance().isUseComponents()) {
             p0.sendMessage(ParseUtil.parseText(finalText));
         } else {
             p0.sendMessage(prefix + textToSend);
+        }
+    }
+
+    public void broadcast(String text) {
+        String prefix = colored(data.getPrefix());
+        String textToSend = colored(text);
+        String finalText = prefix + textToSend;
+        if (GunGame.getInstance().isUseComponents()) {
+            PaperAdapter.broadcastMsg(finalText);
+        } else {
+            Bukkit.broadcastMessage(prefix + textToSend);
         }
     }
 

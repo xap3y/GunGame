@@ -66,7 +66,8 @@ dependencies {
     compileOnly "io.papermc.paper:paper-api:${paperVersion ?: '1.21.10'}-R0.1-SNAPSHOT".replaceAll("\'", "")
     implementation "org.incendo:cloud-annotations:${cloudAnnotationsVersion ?: '2.0.0'}".replaceAll("\'", "")
     implementation "org.incendo:cloud-paper:${cloudPaperVersion ?: '2.0.0-beta.14'}".replaceAll("\'", "")
-
+    implementation "com.zaxxer:HikariCP:7.0.2"
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.7'
 
     if (usePapi) {
         compileOnly "me.clip:placeholderapi:${papiVersion ?: '2.11.6'}".replaceAll("\'", "")
@@ -136,6 +137,12 @@ tasks {
         archiveClassifier.set('')
         archiveBaseName.set(baseCoordinates.replaceAll("\"", ""))
 
+        minimize() {
+            exclude 'org/immutables/**'
+            exclude(dependency("org.mariadb.jdbc:.*"))
+            exclude(dependency("com.zaxxer:HikariCP:.*"))
+        }
+
         if (useStats) {
             relocate 'org.bstats', "${group}.${baseCoordinates.replaceAll("\"", "").toLowerCase()}.util.bstats"
         }
@@ -143,6 +150,7 @@ tasks {
         relocate 'com.cryptomorin.xseries', "${group}.${baseCoordinates.replaceAll("\"", "").toLowerCase()}.util.xseries"
 
         mergeServiceFiles()
+
         dependencies {
             exclude(dependency('io.papermc.paper:paper-api'))
         }

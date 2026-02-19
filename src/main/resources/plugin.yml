@@ -6,6 +6,6 @@ authors: [ XAP3Y ]
 description: GunGame minigame
 website: https://minecore.cz
 
-softdepend: [ Vault, PlaceholderAPI ]
+softdepend: [ Vault, PlaceholderAPI, Multiverse-Core ]
 
 

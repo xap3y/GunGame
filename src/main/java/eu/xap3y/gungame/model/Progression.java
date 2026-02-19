@@ -1,78 +1,110 @@
 package eu.xap3y.gungame.model;
 
+import com.cryptomorin.xseries.XEnchantment;
 import com.cryptomorin.xseries.XMaterial;
 import eu.xap3y.gungame.util.ItemBuilder;
-import eu.xap3y.gungame.util.Utils;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+// TODO: more optimized, dont rebuild List every tier, check differences/apply only changes
 public class Progression {
     private final List<List<ItemStack>> steps;
 
     public Progression() {
+        this.steps = buildProgression();
+    }
 
-        // 0
+    private List<List<ItemStack>> buildProgression() {
+        List<List<ItemStack>> finalSteps = new ArrayList<>();
 
-        this.steps = List.of(Collections.singletonList(XMaterial.WOODEN_AXE.parseItem()),
+        Map<String, ItemStack> currentLoadout = new HashMap<>();
 
-                // 1
-                Collections.singletonList(XMaterial.WOODEN_SWORD.parseItem()),
+        java.util.function.Consumer<ItemStack[]> addStep = (items) -> {
+            for (ItemStack item : items) {
+                String slot = getSlotType(item);
+                currentLoadout.put(slot, item);
+            }
+            finalSteps.add(new ArrayList<>(currentLoadout.values()));
+        };
 
-                // 2
-                new ArrayList<>() {{
-                    add(XMaterial.LEATHER_HELMET.parseItem());
-                    add(XMaterial.WOODEN_SWORD.parseItem());
-                }},
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.WOODEN_AXE).build()
+        });
 
-                // 3
-                new ArrayList<>() {{
-                    add(XMaterial.LEATHER_HELMET.parseItem());
-                    add(XMaterial.LEATHER_BOOTS.parseItem());
-                    add(XMaterial.WOODEN_SWORD.parseItem());
-                }},
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.WOODEN_SWORD).build()
+        });
 
-                // 4
-                new ArrayList<>() {{
-                    add(XMaterial.LEATHER_HELMET.parseItem());
-                    add(XMaterial.LEATHER_BOOTS.parseItem());
-                    add(XMaterial.LEATHER_LEGGINGS.parseItem());
-                    add(XMaterial.WOODEN_SWORD.parseItem());
-                }},
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.LEATHER_HELMET).build()
+        });
 
-                // 5
-                new ArrayList<>() {{
-                    add(XMaterial.LEATHER_HELMET.parseItem());
-                    add(XMaterial.LEATHER_BOOTS.parseItem());
-                    add(XMaterial.LEATHER_CHESTPLATE.parseItem());
-                    add(XMaterial.LEATHER_LEGGINGS.parseItem());
-                    add(XMaterial.WOODEN_SWORD.parseItem());
-                }},
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.LEATHER_BOOTS).build()
+        });
 
-                // 6
-                new ArrayList<>() {{
-                    add(XMaterial.LEATHER_HELMET.parseItem());
-                    add(XMaterial.LEATHER_BOOTS.parseItem());
-                    add(XMaterial.LEATHER_CHESTPLATE.parseItem());
-                    add(XMaterial.LEATHER_LEGGINGS.parseItem());
-                    add(ItemBuilder.create(XMaterial.WOODEN_AXE).withEnchant(Utils.getLegacyEnchantmentByName("SHARPNESS", "DAMAGE_ALL"), 1).build());
-                }},
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.LEATHER_LEGGINGS).build()
+        });
 
-                // 7
-                new ArrayList<>() {{
-                    add(XMaterial.LEATHER_HELMET.parseItem());
-                    add(XMaterial.LEATHER_BOOTS.parseItem());
-                    add(XMaterial.LEATHER_CHESTPLATE.parseItem());
-                    add(XMaterial.LEATHER_LEGGINGS.parseItem());
-                    add(ItemBuilder.create(XMaterial.WOODEN_AXE).withEnchant(Utils.getLegacyEnchantmentByName("SHARPNESS", "DAMAGE_ALL"), 2).build());
-                }});
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.LEATHER_CHESTPLATE).build()
+        });
+
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.WOODEN_AXE).withEnchant(XEnchantment.SHARPNESS, 1).build()
+        });
+
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.LEATHER_HELMET).withEnchant(XEnchantment.PROTECTION, 1).build()
+        });
+
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.LEATHER_BOOTS).withEnchant(XEnchantment.PROTECTION, 1).build()
+        });
+
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.LEATHER_LEGGINGS).withEnchant(XEnchantment.PROTECTION, 1).build()
+        });
+
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.LEATHER_CHESTPLATE).withEnchant(XEnchantment.PROTECTION, 1).build()
+        });
+
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.WOODEN_SWORD).withEnchant(XEnchantment.SHARPNESS, 1).build()
+        });
+
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.GOLDEN_HELMET).build()
+        });
+
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.GOLDEN_BOOTS).build()
+        });
+
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.GOLDEN_LEGGINGS).build()
+        });
+
+        addStep.accept(new ItemStack[] {
+                ItemBuilder.create(XMaterial.GOLDEN_CHESTPLATE).build()
+        });
+
+        return finalSteps;
+    }
+
+    private String getSlotType(ItemStack item) {
+        String type = item.getType().name();
+        if (type.endsWith("_HELMET")) return "HELMET";
+        if (type.endsWith("_CHESTPLATE")) return "CHESTPLATE";
+        if (type.endsWith("_LEGGINGS")) return "LEGGINGS";
+        if (type.endsWith("_BOOTS")) return "BOOTS";
+        if (type.equals("SHIELD")) return "OFFHAND";
+        return "WEAPON";
     }
 
     public int maxIndex() {

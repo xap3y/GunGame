@@ -1,28 +1,26 @@
 package eu.xap3y.gungame;
 
+import com.cryptomorin.xseries.XSound;
+import eu.xap3y.gungame.command.DevCommand;
 import eu.xap3y.gungame.command.RootCommand;
+import eu.xap3y.gungame.command.SetupCommand;
+import eu.xap3y.gungame.database.DatabaseManager;
 import eu.xap3y.gungame.listener.GunGameListener;
-import eu.xap3y.gungame.listener.PlayerJoinListener;
-import eu.xap3y.gungame.manager.ArenaManager;
-import eu.xap3y.gungame.manager.CommandManager;
-import eu.xap3y.gungame.manager.ConfigManager;
-import eu.xap3y.gungame.manager.LangManager;
-import eu.xap3y.gungame.model.Arena;
+import eu.xap3y.gungame.listener.PlayerConnectListener;
+import eu.xap3y.gungame.listener.PlayerMoveListener;
+import eu.xap3y.gungame.manager.*;
 import eu.xap3y.gungame.model.Progression;
 import eu.xap3y.gungame.service.LevelingService;
 import eu.xap3y.gungame.service.Texter;
 import eu.xap3y.xagui.XaGui;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.event.Listener;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.ArrayList;
 
 @Getter
 public final class GunGame extends JavaPlugin {
@@ -30,7 +28,8 @@ public final class GunGame extends JavaPlugin {
     @Getter
     private static GunGame instance;
 
-    private Texter texter;
+    @Getter
+    private static Texter texter;
 
     @Getter
     private boolean useComponents = false;
@@ -43,7 +42,11 @@ public final class GunGame extends JavaPlugin {
 
     private LevelingService levelingService;
 
+    private DatabaseManager databaseManager;
+
     private final ArenaManager arenaManager = new ArenaManager();
+
+    private ArenaLoader arenaLoader;
 
     @Override
     public void onEnable() {
@@ -52,9 +55,11 @@ public final class GunGame extends JavaPlugin {
         //  Initializing XaGUI  \\
         xagui = new XaGui(this);
 
+        xagui.setCloseButtonSound(XSound.BLOCK_COPPER_DOOR_CLOSE.or(XSound.BLOCK_WOODEN_DOOR_CLOSE).get());
+
         //  Creating parser & Parsing command classes below  \\
         CommandManager cmdManager = new CommandManager(true);
-        cmdManager.parseLegacy(new RootCommand());
+        cmdManager.parseLegacy(new RootCommand(), new SetupCommand(), new DevCommand());
 
 
         //  Saving if not exists & Reloading config file  \\
@@ -63,7 +68,8 @@ public final class GunGame extends JavaPlugin {
         //  Setting up texter  \\
         String prefix = getConfig().getString("prefix");
         if (prefix == null) prefix = "&7[&bserver&7] &r";
-        texter = new Texter(prefix, false, null);
+        File debugFile = new File(getDataFolder(), "debug.log");
+        texter = new Texter(prefix, true, debugFile);
 
         langManager = new LangManager(new File(getDataFolder(), "locale.yml"));
 
@@ -77,12 +83,17 @@ public final class GunGame extends JavaPlugin {
         PluginManager manager = getServer().getPluginManager();
         registerListeners(manager);
 
-        arenaManager.setCurrentArena(new Arena(
+        /*arenaManager.setCurrentArena(new Arena(
                 "Default Arena",
                 "XAP3Y",
                 5.0,
-                new Location(Bukkit.getWorld("test"), 0.5, 100, 0.5)
-        ));
+                new Location(Bukkit.getWorld("test"), 0.5, 4, 0.5)
+        ));*/
+
+        arenaLoader = new ArenaLoader(new File(getDataFolder(), "arenas.yml"));
+        arenaLoader.refreshArenaPool();
+
+        arenaManager.restartArenaRotationTask();
 
         try {
             Class.forName("net.kyori.adventure.text.Component");
@@ -90,6 +101,8 @@ public final class GunGame extends JavaPlugin {
         } catch (ClassNotFoundException e) {
             useComponents = false;
         }
+
+        databaseManager = new DatabaseManager(this);
     }
 
     private void registerPermission(String permission) {
@@ -100,7 +113,8 @@ public final class GunGame extends JavaPlugin {
         //  Registering listeners  \\
         Listener[] listeners = new Listener[]{
                 new GunGameListener(GunGame.getInstance().getLevelingService()),
-                new PlayerJoinListener()
+                new PlayerConnectListener(),
+                new PlayerMoveListener()
         };
 
         for (Listener listener : listeners) {

@@ -1,9 +1,16 @@
 
 prefix: "&7[&6GunGame&7] &r"
 
+auto-join: true
+
+arena-rotate:
+    enabled: true
+    interval: 300 # in seconds
+
 database:
     host: "localhost"
     port: 3306
     name: "gungame_db"
     user: "root"
     password: "password123"
+    useSSL: false

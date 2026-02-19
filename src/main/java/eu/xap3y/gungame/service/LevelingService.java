@@ -34,4 +34,8 @@ public class LevelingService {
         p.decrement();
         return p.getLevel() != before;
     }
+
+    public void reset(UUID uuid) {
+        progress.remove(uuid);
+    }
 }

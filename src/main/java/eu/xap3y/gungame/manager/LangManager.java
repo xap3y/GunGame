@@ -1,12 +1,13 @@
 package eu.xap3y.gungame.manager;
 
+import eu.xap3y.gungame.GunGame;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 
 public class LangManager {
 
-    private File langFile;
+    private final File langFile;
     private YamlConfiguration langYamlConfig;
 
     public LangManager(File langFile) {
@@ -25,6 +26,7 @@ public class LangManager {
     public void reload() {
         langYamlConfig = YamlConfiguration.loadConfiguration(langFile);
     }
+
 
     public String get(String path) {
         return get(path, "LANGUAGE STRING NOT FOUND");
