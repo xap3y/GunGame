@@ -1,8 +1,12 @@
 package eu.xap3y.gungame.util;
 
+import com.cryptomorin.xseries.XItemStack;
+import com.cryptomorin.xseries.XMaterial;
+import eu.xap3y.xagui.models.GuiButton;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 public class Utils {
@@ -24,6 +28,24 @@ public class Utils {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    public static ItemStack createWand() {
+        GuiButton b0 = new GuiButton(XMaterial.BLAZE_ROD.get())
+                .setName("&6&lGunGame Wand")
+                .addLore("&r", "&7Right click -> pos1", "&7Left click -> pos2");
+        return b0.getItem();
+    }
+
+    public static boolean isWand(@NotNull ItemStack item) {
+        if (item.getType() != XMaterial.BLAZE_ROD.parseMaterial()) {
+            return false;
+        }
+        if (!item.getItemMeta().hasDisplayName()) {
+            return false;
+        }
+        String displayName = item.getItemMeta().getDisplayName();
+        return displayName.contains("GunGame Wand");
     }
 
     @NotNull
@@ -65,5 +87,23 @@ public class Utils {
                 yaw,
                 pitch
         );
+    }
+
+    // Time like 1m 30s or 45s AND also 2m instead of 2m 0s
+    public static String formatTime(long seconds) {
+        long minutes = seconds / 60;
+        long remainingSeconds = seconds % 60;
+
+        StringBuilder sb = new StringBuilder();
+        if (minutes > 0) {
+            sb.append(minutes).append("m");
+        }
+        if (remainingSeconds > 0 || minutes == 0) {
+            if (!sb.isEmpty()) {
+                sb.append(" ");
+            }
+            sb.append(remainingSeconds).append("s");
+        }
+        return sb.toString();
     }
 }

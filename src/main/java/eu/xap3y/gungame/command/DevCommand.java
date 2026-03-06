@@ -4,6 +4,7 @@ import eu.xap3y.gungame.GunGame;
 import eu.xap3y.gungame.model.Arena;
 import eu.xap3y.gungame.util.ConfigDb;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.Permission;
 
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 
 public class DevCommand {
 
-    @Command(ConfigDb.COMMAND_BASE + "-dev info")
+    @Command(ConfigDb.COMMAND_BASE + " dev info")
     @Permission(value = {ConfigDb.PERMISSION_NODE + "*", ConfigDb.PERMISSION_NODE + "dev"}, mode = Permission.Mode.ANY_OF)
     public void devInfo(
             CommandSender ctx
@@ -35,5 +36,17 @@ public class DevCommand {
 
         GunGame.getTexter().response(ctx, "&fFirst arena in pool: &a" + (first != null ? first.getArenaName() : "&cN/A"));
         GunGame.getTexter().response(ctx, "&fLast arena in pool: &a" + (last != null ? last.getArenaName() : "&cN/A"));
+    }
+
+    @Command(ConfigDb.COMMAND_BASE + " dev safezone")
+    @Permission(value = {ConfigDb.PERMISSION_NODE + "*", ConfigDb.PERMISSION_NODE + "dev"}, mode = Permission.Mode.ANY_OF)
+    public void safeZoneTest(
+            CommandSender ctx
+    ) {
+        if (ctx instanceof Player player) {
+            boolean isInSafeZone = GunGame.getInstance().getArenaManager().getCurrentArena() != null &&
+                    GunGame.getInstance().getArenaManager().getCurrentArena().isInSafeZone(player.getLocation());
+            GunGame.getTexter().response(ctx, "&fYou are currently " + (isInSafeZone ? "&ainside" : "&coutside") + " the safe zone.");
+        }
     }
 }

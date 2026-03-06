@@ -7,6 +7,7 @@ import eu.xap3y.gungame.database.dao.PlayerDao;
 import lombok.Getter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NonNull;
+import reactor.core.publisher.Mono;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -50,7 +51,7 @@ public class DatabaseManager {
         FileConfiguration config = plugin.getConfig();
         HikariConfig hikari = new HikariConfig();
         hikari.setJdbcUrl("jdbc:mariadb://" + config.getString("database.host") + ":" + config.getString("database.port") + "/" + config.getString("database.database"));
-        hikari.setUsername(config.getString("database.username"));
+        hikari.setUsername(config.getString("database.user"));
         hikari.setPassword(config.getString("database.password"));
         hikari.setDriverClassName("org.mariadb.jdbc.Driver");
         hikari.setMaximumPoolSize(10);

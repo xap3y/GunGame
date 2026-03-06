@@ -5,4 +5,34 @@ arena-left: "&aYou have left the arena."
 setup-fallback-pos-set: "&aFallback position set to your current location."
 arena-rotated: "&6Arena has been rotated to &e{arena}&6!"
 arena-exists: "&cAn arena with that name already exists!"
+arena-not-exists: "&cAn arena with that name does not exist!"
 arena-created: "&aArena &e{arena}&a has been created!"
+arena-spawn-set: "&aSpawn point set for arena &e{arena}&a!"
+wand-no-positions: "&cYou must select two positions with the wand first!"
+arena-already-enabled: "&cArena &e{arena}&c is already enabled!"
+arena-not-complete: "&cArena &e{arena}&c is not ready to be enabled! Make sure you have set the spawn and both positions with the wand."
+arena-enabled: "&aArena &e{arena}&a has been enabled!"
+
+actionbar:
+    kill: "&aYou killed &e{player}&a! &6You are now level &e{level}&6!"
+    death-by-player: "&cYou were killed by &e{killer}&c!"
+    death: "&cYou were killed!"
+
+arena-map-change:
+    title: "&6&l{arena}"
+    subtitle: "&r"
+    countdown: "&7Next map change in &e{time}&7 seconds."
+
+events:
+    ARROW_SHOWER:
+        name: "&aArrow Shower"
+        subtitle: "&7Arrows will rain from the sky!"
+        time: 60
+    METEOR_SHOWER:
+        name: "&cMeteor Shower"
+        subtitle: "&7Meteors will fall from the sky!"
+        time: 60
+    DOUBLE_UPGRADE:
+        name: "&eDouble Upgrade"
+        subtitle: "&7All upgrades are doubled for a limited time!"
+        time: 30

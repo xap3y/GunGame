@@ -1,6 +1,8 @@
 package eu.xap3y.gungame.manager;
 
+import com.cryptomorin.xseries.XSound;
 import eu.xap3y.gungame.GunGame;
+import eu.xap3y.gungame.api.event.MapChangeEvent;
 import eu.xap3y.gungame.model.Arena;
 import eu.xap3y.gungame.util.ConfigDb;
 import eu.xap3y.gungame.util.UpgradeUtil;
@@ -12,6 +14,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -31,17 +34,24 @@ public class ArenaManager {
     private final Map<UUID, Player> lastDamager = new java.util.HashMap<>();
 
     private BukkitTask arenaRotationTask;
+
     @Getter
     private LocalDateTime arenaRotationStartTime;
+
     @Getter
     private LocalDateTime nextArenaTime;
+
+    public long getSecondsUntilNextArena() {
+        if (nextArenaTime == null) return -1;
+        return Duration.between(LocalDateTime.now(), nextArenaTime).getSeconds();
+    }
 
     public void respawnPlayer(@NotNull Player p0) {
         p0.teleport(currentArena.getSpawn());
     }
 
     public void changeArena(Arena arena) {
-        GunGame.getTexter().console("[=] &6Changing arena to: " + arena.getArenaName());
+        GunGame.getTexter().console("&7Changing arena to: &e" + arena.getArenaName());
         resetArena();
         currentArena = arena;
         arenaRotationStartTime = LocalDateTime.now();
@@ -101,7 +111,7 @@ public class ArenaManager {
 
     public void teleportAllSpawn() {
         if (currentArena == null) return;
-        GunGame.getTexter().console("&fscheduled teleport of " + players.size() + " players to arena spawn...");
+        GunGame.getTexter().console("&8&oScheduled teleport of " + players.size() + " players to arena spawn...");
         Bukkit.getScheduler().runTask(GunGame.getInstance(), () -> {
             players.forEach((p) -> p.teleport(currentArena.getSpawn()));
         });
@@ -128,7 +138,7 @@ public class ArenaManager {
                 3L
         );
 
-        GunGame.getInstance().getDatabaseManager().getPlayerDao().getOrCreate(player);
+        GunGame.getInstance().getDatabaseManager().getPlayerDao().loadOrCreate(player).subscribe();
     }
 
     public void leavePlayerFromArena(@NotNull Player player) {
@@ -140,15 +150,28 @@ public class ArenaManager {
         GunGame.getInstance().getLevelingService().reset(player.getUniqueId());
     }
 
+    // Change arena
     public void rotateArena() {
         Arena arena = GunGame.getInstance().getArenaLoader().rotateArena();
         if (arena != null) {
+            MapChangeEvent mapChangeEvent = new MapChangeEvent(arena);
+            Bukkit.getScheduler().runTask(GunGame.getInstance(), () ->Bukkit.getServer().getPluginManager().callEvent(mapChangeEvent));
+            if (mapChangeEvent.isCancelled()) {
+                GunGame.getTexter().console("&4Arena rotation cancelled by event listener!");
+                restartArenaRotationTask();
+                return;
+            }
             changeArena(arena);
             String arenaMsg = GunGame.getInstance().getLangManager().get("arena-rotated", "&6Arena has been rotated to &e{arena}&6!");
             arenaMsg = arenaMsg.replace("{arena}", arena.getArenaName());
             GunGame.getTexter().broadcast(arenaMsg);
+            getPlayers()
+                    .stream()
+                    .filter(Player::isOnline)
+                    .forEach(p -> XSound.BLOCK_NOTE_BLOCK_PLING.play(p, .8f, 1f));
+            if (GunGame.getBoardApi() != null) GunGame.getBoardApi().reloadAllBoards();
             Arena next = GunGame.getInstance().getArenaLoader().getArenaPool().peek();
-            GunGame.getTexter().console("&aRotated arena to: &e" + arena.getArenaName() + "&a. Next arena: &e" + (next != null ? next.getArenaName() : "&cN/A"));
+            GunGame.getTexter().console("&8&o[C]&r &aRotated arena to: &e" + arena.getArenaName() + "&a. Next arena: &e" + (next != null ? next.getArenaName() : "&cN/A"));
         } else {
             GunGame.getTexter().broadcast("&4Failed to rotate arena: no arenas available!");
         }
@@ -174,9 +197,7 @@ public class ArenaManager {
         nextArenaTime = LocalDateTime.now().plusSeconds(interval);
         arenaRotationTask = Bukkit.getScheduler().runTaskLaterAsynchronously(
                 GunGame.getInstance(),
-                () -> {
-                    rotateArena();
-                },
+                this::rotateArena,
                 interval * 20L
         );
     }

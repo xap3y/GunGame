@@ -7,9 +7,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.Permission;
+import org.incendo.cloud.annotations.ProxiedBy;
 
 public class RootCommand {
 
+    @ProxiedBy(ConfigDb.MAIN_COMMAND)
     @Command(ConfigDb.COMMAND_BASE + " version")
     @Permission(value = {ConfigDb.PERMISSION_NODE + "*", ConfigDb.PERMISSION_NODE + "version"}, mode = Permission.Mode.ANY_OF)
     public void versionCommand(
@@ -24,6 +26,11 @@ public class RootCommand {
             CommandSender ctx
     ) {
         ConfigManager.reloadConfig();
+        GunGame.getBoardApi().loadConfig();
+        GunGame.getInstance().getLangManager().reload();
+        GunGame.getBoardApi().reloadAllBoards();
+
+        GunGame.getTexter().responseLang(ctx, "config-reloaded", "&aConfig reloaded!");
     }
 
     @Command(ConfigDb.COMMAND_BASE + " reload arenas")

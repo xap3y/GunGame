@@ -22,6 +22,10 @@ import java.util.logging.Level;
 public class Texter {
     private final TexterObjDto data;
 
+    public String getPrefix() {
+        return data.getPrefix();
+    }
+
     public Texter(TexterObjDto data) {
         this.data = data;
     }
@@ -46,12 +50,20 @@ public class Texter {
     }
 
     public void responseLang(CommandSender p0, String path) {
-        responseLang(p0, path, null);
+        responseLang(p0, path, null, null);
+    }
+
+    public void responseLang(CommandSender p0, String path, String defaultText) {
+        responseLang(p0, path, defaultText, null);
     }
 
     public void responseLang(CommandSender p0, String path, @Nullable Map<String, String> placeholders) {
+        responseLang(p0, path, null, placeholders);
+    }
+
+    public void responseLang(CommandSender p0, String path, @Nullable String def, @Nullable Map<String, String> placeholders) {
         String prefix = colored(data.getPrefix());
-        String textToSend = colored(GunGame.getInstance().getLangManager().get(path));
+        String textToSend = colored(GunGame.getInstance().getLangManager().get(path, def));
         if (placeholders != null) {
             for (Map.Entry<String, String> entry : placeholders.entrySet()) {
                 textToSend = textToSend.replace("{" + entry.getKey() + "}", entry.getValue());

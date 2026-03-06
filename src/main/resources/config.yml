@@ -14,3 +14,18 @@ database:
     user: "root"
     password: "password123"
     useSSL: false
+
+# Variables:
+#  {map}, {kills}, {deaths}, {level}, {killstreak}
+#  {coins}, {xp}, {event}, {players}, {stage}, {maptime}
+
+scoreboard:
+    enabled: true
+    title: "&b&l✦  &e&lGunGame  &b&l✦"
+    lines:
+        - "&7Map: &e{map}"
+        - "&7Kills: &e{kills}"
+        - "&7Deaths: &e{deaths}"
+        - "&7Level: &e{level}"
+        - "&7Stage: &e{stage}"
+        - "&7Kill Streak: &e{killstreak}"

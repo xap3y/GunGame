@@ -13,11 +13,15 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+
+import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
 public class GunGameListener implements Listener {
@@ -44,21 +48,42 @@ public class GunGameListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (GunGame.getInstance().getArenaManager().isPlayerInArena(event.getWhoClicked().getUniqueId())) {
+
+            if (!event.getWhoClicked().getGameMode().equals(ConfigDb.GAMEMODE_SET) || event.getWhoClicked().isOp()) return;
+
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onPlayerDamage(EntityDamageEvent event) {
+        if (
+                !(event.getEntity() instanceof Player victim) ||
+                !GunGame.getInstance().getArenaManager().isPlayerInArena(victim.getUniqueId())
+        ) {
+            return;
+        }
+
+        if (event.getCause() == EntityDamageEvent.DamageCause.FALL && ConfigDb.FALL_DAMAGE_CANCEL.contains(victim.getUniqueId())) {
+            event.setCancelled(true);
+            ConfigDb.FALL_DAMAGE_CANCEL.remove(victim.getUniqueId());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDamageByPlayer(EntityDamageByEntityEvent event) {
 
         if (
-                !(event.getDamageSource().getCausingEntity() instanceof Player attacker) ||
+                !(event.getDamager() instanceof Player attacker) ||
                 !(event.getEntity() instanceof Player victim)
         ) {
             return;
         }
 
         if (!GunGame.getInstance().getArenaManager().isPlayerInArena(victim.getUniqueId())) {
+            return;
+        } else if (GunGame.getInstance().getArenaManager().getCurrentArena().isInSafeZone(victim.getLocation())) {
+            event.setCancelled(true);
             return;
         }
 
@@ -71,43 +96,50 @@ public class GunGameListener implements Listener {
             return;
         }
 
+        event.setDeathMessage(null);
+
         Player victim = event.getEntity();
         Player killer;
 
         Player lastDamager = GunGame.getInstance().getArenaManager().getPlayerByVictim(victim.getUniqueId());
         if (lastDamager != null) {
-            GunGame.getTexter().console("lastDamager: " + lastDamager.getName() + " | Victim: " + victim.getName());
             killer = lastDamager;
         } else if (victim.getKiller() != null) {
             killer = victim.getKiller();
-            GunGame.getTexter().console("killer: " + killer.getName() + " | Victim: " + victim.getName());
         } else {
             killer = null;
-            GunGame.getTexter().console("No killer found for victim: " + victim.getName());
         }
 
+        boolean isWithKiller = killer != null && killer != victim && killer.getGameMode() == ConfigDb.GAMEMODE_SET;
+
         // Handle killer upgrade
-        if (killer != null && killer != victim && killer.getGameMode() == ConfigDb.GAMEMODE_SET) {
+        if (isWithKiller) {
             boolean leveled = levelingService.addKill(killer.getUniqueId());
+
+            String msg = GunGame.getInstance().getLangManager().get("actionbar.kill");
+            msg = msg
+                    .replace("{player}", victim.getName())
+                    .replace("{stage}", levelingService.get(killer.getUniqueId()).getLevel() + "");
+
             if (leveled) {
                 applyLoadout(killer);
                 XSound.ENTITY_PLAYER_LEVELUP.play(killer, .7f, 1.5f);
-                ActionBar.sendActionbar(killer, Texter.colored("&aLevel Up! Now at &e" + levelingService.get(killer.getUniqueId()).getLevel()));
+                ActionBar.sendActionbar(killer, Texter.colored(msg));
             }
         }
 
         // Handle victim downgrade
         if (victim.getGameMode() == ConfigDb.GAMEMODE_SET) {
-            boolean downgrade = levelingService.addDeath(victim.getUniqueId());
             Bukkit.getScheduler().runTaskLater(
                     GunGame.getInstance(),
                     () -> {
                         applyLoadout(victim);
-                        if (!downgrade) {
-                            ActionBar.sendActionbar(victim, Texter.colored("&cYou died!"));
-                        } else {
-                            ActionBar.sendActionbar(victim, Texter.colored("&cLevel down > &e" + levelingService.get(victim.getUniqueId()).getLevel()));
-                        }
+                        boolean downgraded = levelingService.addDeath(victim.getUniqueId());
+                        String msg = (isWithKiller) ? GunGame.getInstance().getLangManager().get("actionbar.death-by-player") : GunGame.getInstance().getLangManager().get("actionbar.death");
+                        msg = msg
+                                .replace("{killer}", (isWithKiller) ? killer.getName() : "Unknown")
+                                .replace("{stage}", levelingService.get(victim.getUniqueId()).getLevel() + "");
+                        ActionBar.sendActionbar(victim, Texter.colored(msg));
                         XSound.ENTITY_SKELETON_DEATH.play(victim, 1f, .7f);
                     },
                     1L

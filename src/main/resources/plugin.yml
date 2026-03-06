@@ -1,11 +1,16 @@
+# noinspection YAMLSchemaValidation
 name: ${baseCoordinates}
 version: ${version}
 main: eu.xap3y.gungame.GunGame
 api-version: '1.20'
 authors: [ XAP3Y ]
 description: GunGame minigame
-website: https://minecore.cz
+website: https://pvpcraft.cz
+load: POSTWORLD
 
-softdepend: [ Vault, PlaceholderAPI, Multiverse-Core ]
+depend:
+    - Vault
+
+softdepend: [ PlaceholderAPI, Multiverse-Core, LiteEco ]
 
 

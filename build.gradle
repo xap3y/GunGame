@@ -53,21 +53,31 @@ repositories {
     maven {
         url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
     }
+
+    maven { url 'https://repo.codemc.io/repository/creatorfromhell/' }
 }
 
 def usePapi = project.hasProperty("usePapi") && project.usePapi.toBoolean()
-def useGui = project.hasProperty("useXaGui") && project.useXaGui.toBoolean()
 def useStats = project.hasProperty("useBStats") && project.useBStats.toBoolean()
 def useGson = project.hasProperty("useGson") && project.useGson.toBoolean()
-def useVault = project.hasProperty("useVault") && project.useVault.toBoolean()
 def useLuckPerms = project.hasProperty("useLuckPerms") && project.useLuckPerms.toBoolean()
+def useVault = project.hasProperty("useVault") && project.useVault.toBoolean()
 
 dependencies {
     compileOnly "io.papermc.paper:paper-api:${paperVersion ?: '1.21.10'}-R0.1-SNAPSHOT".replaceAll("\'", "")
     implementation "org.incendo:cloud-annotations:${cloudAnnotationsVersion ?: '2.0.0'}".replaceAll("\'", "")
     implementation "org.incendo:cloud-paper:${cloudPaperVersion ?: '2.0.0-beta.14'}".replaceAll("\'", "")
-    implementation "com.zaxxer:HikariCP:7.0.2"
-    implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.7'
+    implementation "com.zaxxer:HikariCP:${hikariCPVersion ?: '7.2.0'}".replaceAll("\'", "")
+    implementation "org.mariadb.jdbc:mariadb-java-client:${mariaDbVersion ?: '3.5.7'}".replaceAll("\'", "")
+    implementation "io.projectreactor:reactor-core:3.8.3"
+
+    /*if (useVault) {
+        compileOnly("com.github.MilkBowl:VaultAPI:${vaultVersion ?: '1.7'}".replaceAll("\'", "")) {
+            exclude group: 'org.bukkit', module: 'bukkit'
+        }
+    }*/
+
+    compileOnly "net.milkbowl.vault:VaultUnlockedAPI:2.19"
 
     if (usePapi) {
         compileOnly "me.clip:placeholderapi:${papiVersion ?: '2.11.6'}".replaceAll("\'", "")
@@ -79,14 +89,12 @@ dependencies {
     if (useGson) {
         implementation "com.google.code.gson:gson:${gsonVersion ?: '2.10.1'}".replaceAll("\'", "")
     }
-    if (useVault) {
-        compileOnly "net.milkbowl.vault:VaultAPI:${vaultVersion ?: '1.7'}".replaceAll("\'", "")
-    }
     if (useLuckPerms) {
         compileOnly "net.luckperms:api:${luckPermsVersion ?: '5.4'}".replaceAll("\'", "")
     }
-    implementation 'fr.mrmicky:fastboard:2.1.5'
-    implementation("com.github.cryptomorin:XSeries:13.6.0")
+
+    implementation "fr.mrmicky:fastboard:${fastBoardVersion ?: '2.1.5'}".replaceAll("\'", "")
+    implementation "com.github.cryptomorin:XSeries:${xSeriesVersion ?: '13.6.0'}".replaceAll("\'", "")
 }
 
 def targetJavaVersion = javaVersion.replaceAll("\'", "").replaceAll("\"", "").toInteger() ?: 21
@@ -115,21 +123,21 @@ processResources {
             commandBase: commandBase,
             mainCommand: mainCommand,
             baseCoordinates: baseCoordinates.replaceAll("\'", "").replaceAll("\"", ""),
-            mainClass: "${project.group}.${baseCoordinates.replaceAll("\'", "").replaceAll("\"", "").toLowerCase()}.${baseCoordinates.replaceAll("\'", "").replaceAll("\"", "")}"
+            mainClass: "${project.group}.${baseCoordinates.replaceAll("\'", "").replaceAll("\"", "").toLowerCase()}.${baseCoordinates.replaceAll("\'", "").replaceAll("\"", "")}",
+            hikariCPVersion: hikariCPVersion.replaceAll("\'", "").replaceAll("\"", ""),
+            cloudAnnotationsVersion: cloudAnnotationsVersion.replaceAll("\'", "").replaceAll("\"", ""),
+            cloudPaperVersion: cloudPaperVersion.replaceAll("\'", "").replaceAll("\"", ""),
+            mariaDbVersion: mariaDbVersion.replaceAll("\'", "").replaceAll("\"", ""),
+            fastBoardVersion: fastBoardVersion.replaceAll("\'", "").replaceAll("\"", ""),
+            xSeriesVersion: xSeriesVersion.replaceAll("\'", "").replaceAll("\"", ""),
+            xaGuiVersion: xaGuiVersion.replaceAll("\'", "").replaceAll("\"", ""),
+            bStatsVersion: bStatsVersion.replaceAll("\'", "").replaceAll("\"", "")
     ]
     inputs.properties props
     filteringCharset 'UTF-8'
-    filesMatching('plugin.yml') {
+    filesMatching(["plugin.yml", "paper-plugin.yml", "paper-libraries.yml"]) {
         expand props
     }
-}
-
-build {
-    dependsOn(shadowJar)
-}
-
-tasks.jar {
-    enabled = false
 }
 
 tasks {
@@ -163,4 +171,12 @@ tasks {
         exclude '**/*Test*', '**/test/**', '**/tests/**', '**/*Example*', '**/samples/**', '**/javadoc/**'
         exclude '**/i18n/**', '**/locale/**', '**/locales/**', '**/messages/**'
     }
+}
+
+build {
+    dependsOn(shadowJar)
+}
+
+tasks.jar {
+    enabled = false
 }
