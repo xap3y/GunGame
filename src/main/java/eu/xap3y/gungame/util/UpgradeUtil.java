@@ -15,8 +15,12 @@ public final class UpgradeUtil {
 
     public static void process(Player p0) {
 
+        GunGame.getTexter().debugLog("UpgradeUtil.process for " + p0.getName());
         int level = GunGame.getInstance().getLevelingService().get(p0.getUniqueId()).getLevel();
         Set<Material> managedTypes = GunGame.getInstance().getProgression().managedMaterials();
+
+        GunGame.getTexter().debugLog("UpgradeUtil.process.2 for " + p0.getName() + " | level " + level + " | managedTypes.size(): " + managedTypes.size());
+
         PlayerInventory inv = p0.getInventory();
         ItemStack[] contents = inv.getContents();
         for (int i = 0; i < contents.length; i++) {

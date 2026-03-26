@@ -2,7 +2,9 @@ package eu.xap3y.gungame.listener;
 
 import com.cryptomorin.xseries.XSound;
 import eu.xap3y.gungame.GunGame;
+import eu.xap3y.gungame.api.enums.KillEffectType;
 import eu.xap3y.gungame.service.LevelingService;
+import eu.xap3y.gungame.service.PotionService;
 import eu.xap3y.gungame.service.Texter;
 import eu.xap3y.gungame.util.ActionBar;
 import eu.xap3y.gungame.util.ConfigDb;
@@ -20,22 +22,47 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
-import java.util.List;
-import java.util.UUID;
-
 @AllArgsConstructor
 public class GunGameListener implements Listener {
 
     private final LevelingService levelingService;
 
+    /*@EventHandler
+    public void onRespawn(PlayerPostRespawnEvent event) {
+        if (!GunGame.getInstance().getArenaManager().isPlayerInArena(event.getPlayer().getUniqueId())) {
+            return;
+        }
+        event.getPlayer().setGameMode(ConfigDb.GAMEMODE_SET);
+        PotionService.getInstance().refresh(event.getPlayer());
+    }*/
+
     @EventHandler
-    public void onRespawn(PlayerRespawnEvent event) {
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        GunGame.getTexter().logPos();
         if (!GunGame.getInstance().getArenaManager().isPlayerInArena(event.getPlayer().getUniqueId())) {
             return;
         }
         Location custom = GunGame.getInstance().getArenaManager().getCurrentArena().getSpawn();
         event.setRespawnLocation(custom);
-        event.getPlayer().setGameMode(ConfigDb.GAMEMODE_SET);
+
+        Player player = event.getPlayer();
+
+        Bukkit.getScheduler().runTaskLater(GunGame.getInstance(), () -> {
+            GunGame.getTexter().debugLog("LAST_DEATHS_CALLS.remove(" + player.getUniqueId() + ")");
+            ConfigDb.LAST_DEATHS_CALLS.remove(player.getUniqueId());
+            if (player.isOnline()) {
+                player.setGameMode(ConfigDb.GAMEMODE_SET);
+
+                // Re-apply potion effects from your service
+                PotionService.getInstance().refresh(player);
+
+                // Optional: Ensure they are full health/hunger
+                player.setHealth(player.getMaxHealth());
+                player.setFoodLevel(20);
+            }
+        }, 1L);
+
+        GunGame.getTexter().response(player, "Stage: " + levelingService.get(player.getUniqueId()).getLevel());
     }
 
     @EventHandler
@@ -57,21 +84,30 @@ public class GunGameListener implements Listener {
 
     @EventHandler
     public void onPlayerDamage(EntityDamageEvent event) {
-        if (
-                !(event.getEntity() instanceof Player victim) ||
-                !GunGame.getInstance().getArenaManager().isPlayerInArena(victim.getUniqueId())
-        ) {
+        GunGame.getTexter().logPos();
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+
+        Player victim = (Player) event.getEntity();
+
+        if (!GunGame.getInstance().getArenaManager().isPlayerInArena(victim.getUniqueId())) {
             return;
         }
 
         if (event.getCause() == EntityDamageEvent.DamageCause.FALL && ConfigDb.FALL_DAMAGE_CANCEL.contains(victim.getUniqueId())) {
             event.setCancelled(true);
             ConfigDb.FALL_DAMAGE_CANCEL.remove(victim.getUniqueId());
+            if (ConfigDb.FALL_DAMAGE_CANCEL_TASK.containsKey(victim.getUniqueId())) {
+                ConfigDb.FALL_DAMAGE_CANCEL_TASK.get(victim.getUniqueId()).cancel();
+                ConfigDb.FALL_DAMAGE_CANCEL_TASK.remove(victim.getUniqueId());
+            }
         }
     }
 
     @EventHandler
     public void onPlayerDamageByPlayer(EntityDamageByEntityEvent event) {
+        GunGame.getTexter().logPos();
 
         if (
                 !(event.getDamager() instanceof Player attacker) ||
@@ -92,9 +128,20 @@ public class GunGameListener implements Listener {
 
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
+
+        if (ConfigDb.LAST_DEATHS_CALLS.contains(event.getEntity().getUniqueId())) {
+            GunGame.getTexter().debugLog("Skipping death processing for " + event.getEntity().getName() + " due to recent death call.");
+            return;
+        } else {
+            ConfigDb.LAST_DEATHS_CALLS.add(event.getEntity().getUniqueId());
+            GunGame.getTexter().debugLog("Added " + event.getEntity().getName() + " to LAST_DEATHS_CALLS.");
+        }
+
         if (!GunGame.getInstance().getArenaManager().isPlayerInArena(event.getEntity().getUniqueId())) {
             return;
         }
+
+        GunGame.getTexter().console("Player " + event.getEntity().getName() + " died, processing death...");
 
         event.setDeathMessage(null);
 
@@ -112,8 +159,13 @@ public class GunGameListener implements Listener {
 
         boolean isWithKiller = killer != null && killer != victim && killer.getGameMode() == ConfigDb.GAMEMODE_SET;
 
+        GunGame.getTexter().debugLog("onDeath for " + victim.getName() + " | isWithKilled = " + isWithKiller + " | Killer: " + ((killer != null) ? killer.getName() : "N/A"));
+
         // Handle killer upgrade
         if (isWithKiller) {
+
+            ConfigDb.KILL_EFFECT_MAP.get(KillEffectType.BLOOD).playEffect(victim.getLocation());
+
             boolean leveled = levelingService.addKill(killer.getUniqueId());
 
             String msg = GunGame.getInstance().getLangManager().get("actionbar.kill");

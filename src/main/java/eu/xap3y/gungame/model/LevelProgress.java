@@ -1,8 +1,10 @@
 package eu.xap3y.gungame.model;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class LevelProgress {
     private int level;
 
@@ -16,5 +18,9 @@ public class LevelProgress {
 
     public void decrement() {
         if (level > 0) level--;
+    }
+
+    public void decrement(int amount) {
+        if (level > 0) level = Math.max(0, level - amount);
     }
 }

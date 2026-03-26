@@ -1,7 +1,6 @@
 package eu.xap3y.gungame.service;
 
 import eu.xap3y.gungame.GunGame;
-import eu.xap3y.gungame.adapter.PaperAdapter;
 import eu.xap3y.gungame.api.dto.TextModifierDto;
 import eu.xap3y.gungame.api.dto.TexterObjDto;
 import eu.xap3y.gungame.api.enums.DefaultFontInfo;
@@ -30,7 +29,39 @@ public class Texter {
         this.data = data;
     }
 
-    public Texter(String prefix, boolean debug, @Nullable File file) {
+    public Texter(String prefix, boolean debug, @Nullable File logFolder) {
+        if (logFolder == null) {
+            this.data = new TexterObjDto(prefix, false, null);
+            return;
+        }
+
+        // Gen log file
+        if (!logFolder.exists()) {
+            logFolder.mkdirs();
+        }
+
+        // Create debug file like "debug_2025_12_31.log"
+        String fileName = "debug_" + new SimpleDateFormat("yyyy_MM_dd").format(new Date()) + ".log";
+        File file = new File(logFolder, fileName);
+
+        if (file.exists()) {
+            // If file already exists, create a new one with an incremented number like "debug_2025_12_31_1.log"
+            int i = 1;
+            while (file.exists()) {
+                file = new File(logFolder, "debug_" + new SimpleDateFormat("yyyy_MM_dd").format(new Date()) + "_" + i + ".log");
+                i++;
+            }
+        } else {
+            try {
+                file.createNewFile();
+            } catch (Exception e) {
+                // If file creation fails, disable debug mode
+                GunGame.getInstance().getLogger().log(Level.SEVERE, "Failed to create debug log file: " + e.getMessage());
+                debug = false;
+                file = null;
+            }
+        }
+
         this.data = new TexterObjDto(prefix, debug, file);
     }
 
@@ -63,6 +94,7 @@ public class Texter {
 
     public void responseLang(CommandSender p0, String path, @Nullable String def, @Nullable Map<String, String> placeholders) {
         String prefix = colored(data.getPrefix());
+        if (def == null) def = path;
         String textToSend = colored(GunGame.getInstance().getLangManager().get(path, def));
         if (placeholders != null) {
             for (Map.Entry<String, String> entry : placeholders.entrySet()) {
@@ -81,11 +113,21 @@ public class Texter {
         String prefix = colored(data.getPrefix());
         String textToSend = colored(text);
         String finalText = prefix + textToSend;
-        if (GunGame.getInstance().isUseComponents()) {
+
+        GunGame.getInstance().getArenaManager().getPlayers().forEach(p0 -> {
+            if (p0 != null) {
+                if (GunGame.getInstance().isUseComponents()) {
+                    p0.sendMessage(ParseUtil.parseText(finalText));
+                } else {
+                    p0.sendMessage(prefix + textToSend);
+                }
+            }
+        });
+        /*if (GunGame.getInstance().isUseComponents()) {
             PaperAdapter.broadcastMsg(finalText);
         } else {
             Bukkit.broadcastMessage(prefix + textToSend);
-        }
+        }*/
     }
 
     public void response(CommandSender p0, String text) {
@@ -102,6 +144,15 @@ public class Texter {
 
     public void console(String text) {
         response(Bukkit.getConsoleSender(), text);
+    }
+
+    public void debugLog(String text) {
+        debugLog(text, Level.INFO);
+    }
+
+    public void logPos() {
+        StackTraceElement el = Thread.currentThread().getStackTrace()[2];
+        debugLog(el.toString(), Level.INFO);
     }
 
     public void debugLog(String text, Level level) {

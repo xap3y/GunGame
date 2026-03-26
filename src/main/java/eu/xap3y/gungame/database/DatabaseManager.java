@@ -28,6 +28,7 @@ public class DatabaseManager {
     }
 
     public void connect() {
+        GunGame.getTexter().logPos();
         if (dataSource != null && !dataSource.isClosed()) return;
 
         HikariConfig hikari = getHikariConfig();
@@ -48,6 +49,7 @@ public class DatabaseManager {
     }
 
     private @NonNull HikariConfig getHikariConfig() {
+        GunGame.getTexter().logPos();
         FileConfiguration config = plugin.getConfig();
         HikariConfig hikari = new HikariConfig();
         hikari.setJdbcUrl("jdbc:mariadb://" + config.getString("database.host") + ":" + config.getString("database.port") + "/" + config.getString("database.database"));
@@ -59,10 +61,12 @@ public class DatabaseManager {
     }
 
     public Connection getConnection() throws SQLException {
+        GunGame.getTexter().logPos();
         return dataSource.getConnection();
     }
 
     private void createTables() {
+        GunGame.getTexter().logPos();
         CompletableFuture.runAsync(() -> {
             try (Connection conn = getConnection(); Statement stmt = conn.createStatement()) {
 
@@ -82,6 +86,7 @@ public class DatabaseManager {
                         "stage INT DEFAULT 0, " +
                         "kill_streak INT DEFAULT 0, " +
                         "best_kill_streak INT DEFAULT 0, " +
+                        "best_stage INT DEFAULT 0, " +
                         "coins INT DEFAULT 0, " +
                         "xp INT DEFAULT 0, " +
                         "FOREIGN KEY (player_id) REFERENCES gg_players(id) ON DELETE CASCADE" +
@@ -108,7 +113,17 @@ public class DatabaseManager {
                         "UNIQUE(player_id, quest_enum)" +
                         ") ENGINE=InnoDB;");
 
+                // 5. Player Upgrades
+                stmt.executeUpdate("CREATE TABLE IF NOT EXISTS gg_player_upgrades (" +
+                        "player_id INT NOT NULL, " +
+                        "upgrade TINYINT UNSIGNED NOT NULL, " +
+                        "level TINYINT UNSIGNED NOT NULL DEFAULT 0, " +
+                        "FOREIGN KEY (player_id) REFERENCES gg_players(id) ON DELETE CASCADE, " +
+                        "UNIQUE(player_id)" +
+                        ") ENGINE=InnoDB;");
+
             } catch (SQLException e) {
+                GunGame.getTexter().debugLog("DatabaseManager.createTables == " + e.getMessage());
                 e.printStackTrace();
             }
         });

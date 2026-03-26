@@ -12,6 +12,13 @@ wand-no-positions: "&cYou must select two positions with the wand first!"
 arena-already-enabled: "&cArena &e{arena}&c is already enabled!"
 arena-not-complete: "&cArena &e{arena}&c is not ready to be enabled! Make sure you have set the spawn and both positions with the wand."
 arena-enabled: "&aArena &e{arena}&a has been enabled!"
+nextmap-rotated: "&aNext map has been rotated!"
+not-in-safezone: "&cYou cannot use that command while in the arena!"
+not-enough-money: "&cYou do not have enough money to purchase that, you need {missing}$ more!"
+already-have-speed: "&cYou already have that speed effect active!"
+upgrade-purchased: "&aYou have purchased &e{upgrade}. &6Level: &e{level}"
+upgrade-purchase-failed: "&cYou cannot purchase that upgrade right now!"
+upgrade-max-level: "&cYou have already reached the maximum level for that upgrade!"
 
 actionbar:
     kill: "&aYou killed &e{player}&a! &6You are now level &e{level}&6!"
@@ -36,3 +43,22 @@ events:
         name: "&eDouble Upgrade"
         subtitle: "&7All upgrades are doubled for a limited time!"
         time: 30
+
+gui:
+    upgrades:
+        title: "&6Upgrade Shop"
+        back: "&cBack"
+
+        button_buy: "&aClick to upgrade"
+        button_max: "&cMax Level"
+
+        double_upgrade:
+            name: "&eDouble Upgrade"
+            description:
+                - "&7Little chance to get 2 stages for 1 kill"
+                - ""
+                - "&6Level: &e{level}"
+                - "&6Cost: &e{cost}$"
+                - "{progress}"
+                - " "
+                - "{button}"

@@ -1,6 +1,8 @@
 package eu.xap3y.gungame;
 
 import com.cryptomorin.xseries.XSound;
+import com.github.fierioziy.particlenativeapi.api.ParticleNativeAPI;
+import com.github.fierioziy.particlenativeapi.core.ParticleNativeCore;
 import eu.xap3y.gungame.api.iface.ScoreboardInterface;
 import eu.xap3y.gungame.command.DevCommand;
 import eu.xap3y.gungame.command.RootCommand;
@@ -12,7 +14,6 @@ import eu.xap3y.gungame.listener.PlayerMoveListener;
 import eu.xap3y.gungame.listener.WandListener;
 import eu.xap3y.gungame.manager.*;
 import eu.xap3y.gungame.model.Progression;
-import eu.xap3y.gungame.service.AdventureBoardService;
 import eu.xap3y.gungame.service.LegacyBoardService;
 import eu.xap3y.gungame.service.LevelingService;
 import eu.xap3y.gungame.service.Texter;
@@ -56,6 +57,9 @@ public final class GunGame extends JavaPlugin {
     private ArenaLoader arenaLoader;
 
     @Getter
+    private ParticleNativeAPI parApi;
+
+    @Getter
     private static Economy econ = null;
 
     @Getter
@@ -81,8 +85,8 @@ public final class GunGame extends JavaPlugin {
         //  Setting up texter  \\
         String prefix = getConfig().getString("prefix");
         if (prefix == null) prefix = "&7[&bserver&7] &r";
-        File debugFile = new File(getDataFolder(), "debug.log");
-        texter = new Texter(prefix, true, debugFile);
+        File logFolder = new File(getDataFolder(), "logs");
+        texter = new Texter(prefix, true, logFolder);
 
         // Setting up lang manager  (locale.yml) \\
         langManager = new LangManager(new File(getDataFolder(), "locale.yml"));
@@ -120,6 +124,8 @@ public final class GunGame extends JavaPlugin {
             useComponents = false;
         }
 
+        parApi = ParticleNativeCore.loadAPI(this);
+
         // Database
         databaseManager = new DatabaseManager(this);
 
@@ -139,6 +145,9 @@ public final class GunGame extends JavaPlugin {
                     getLogger().warning("Vault dependency not found! Retrying...");
                 } else {
                     texter.console("&aSuccessfully hooked into Vault economy!");
+                    if (boardApi != null) {
+                        boardApi.reloadAllBoards();
+                    }
                     this.cancel();
                 }
             }
@@ -175,25 +184,18 @@ public final class GunGame extends JavaPlugin {
         };
 
         for (Listener listener : listeners) {
+            texter.console("Registering listener: " + listener.getClass().getName());
             manager.registerEvents(listener, GunGame.getInstance());
         }
     }
 
-    /*private void registerPapi() {
+    private void registerPapi() {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            *//*
-             * We register the EventListener here, when PlaceholderAPI is installed.
-             * Since all events are in the main class (this class), we simply use "this"
-             *//*
-            //Bukkit.getPluginManager().registerEvents(new MyListener(), this);
+            //Bukkit.getPluginManager().registerEvents(new PapiListener(), this);
         } else {
-            *//*
-             * We inform about the fact that PlaceholderAPI isn't installed and then
-             * disable this plugin to prevent issues.
-             *//*
             //Bukkit.getPluginManager().disablePlugin(this);
         }
-    }*/
+    }
 
     private boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {

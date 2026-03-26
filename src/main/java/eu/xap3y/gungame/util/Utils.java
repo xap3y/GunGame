@@ -6,7 +6,9 @@ import eu.xap3y.xagui.models.GuiButton;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 public class Utils {
@@ -28,6 +30,33 @@ public class Utils {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    public static ItemStack removeAttributes(@NotNull ItemStack item) {
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+
+            try {
+                ItemFlag legacyFlag = ItemFlag.valueOf("HIDE_POTION_EFFECTS");
+                meta.addItemFlags(legacyFlag);
+            } catch (IllegalArgumentException e) {
+                // Ignore if the flag doesn't exist in this version
+            }
+
+            try {
+                ItemFlag legacyFlag = ItemFlag.valueOf("HIDE_ADDITIONAL_TOOLTIP");
+                meta.addItemFlags(legacyFlag);
+            } catch (IllegalArgumentException e) {
+                // Ignore if the flag doesn't exist in this version
+            }
+
+            item.setItemMeta(meta);
+        }
+        return item;
     }
 
     public static ItemStack createWand() {

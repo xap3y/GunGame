@@ -29,3 +29,118 @@ scoreboard:
         - "&7Level: &e{level}"
         - "&7Stage: &e{stage}"
         - "&7Kill Streak: &e{killstreak}"
+
+shop:
+    enabled: true
+
+    upgrades-price:
+        double_upgrade:
+            1: 1000
+            2: 1500
+            3: 2000
+            4: 2500
+            5: 3000
+
+    items:
+        kill-effects:
+            name: "&aKill Effects"
+            lore:
+                - "&7Click to browse."
+        upgrades:
+            name: "&aBuy Upgrades"
+            lore:
+                - "&7Click to browse."
+
+        speed:
+            name: "&aBuy Speed I"
+            price: 800
+            duration: 180
+            lore:
+                - " "
+                - "&fCena: &e800 $"
+                - "&fDobra trvání: &e3 minuty"
+                - " "
+                - "&aKlikni pro nákup."
+
+        snowball:
+            name: "&aBuy Snowball (1x)"
+            price: 300
+            lore:
+                - " "
+                - "&fCena: &e300 $"
+                -
+steps:
+    '1':
+        - WOODEN_AXE
+    '2':
+        - WOODEN_SWORD
+    '3':
+        - LEATHER_HELMET
+    '4':
+        - LEATHER_BOOTS
+    '5':
+        - LEATHER_LEGGINGS
+    '6':
+        - LEATHER_CHESTPLATE
+    '7':
+        - WOODEN_AXE;SHARPNESS
+    '8':
+        - LEATHER_HELMET;PROTECTION-1
+    '9':
+        - LEATHER_BOOTS;PROTECTION-1
+    '10':
+        - LEATHER_LEGGINGS;PROTECTION-1
+    '11':
+        - LEATHER_CHESTPLATE;PROTECTION-1
+    '12':
+        - WOODEN_SWORD;SHARPNESS
+    '13':
+        - WOODEN_SWORD;SHARPNESS
+    '14':
+        - STONE_AXE
+    '15':
+        - STONE_SWORD
+    '16':
+        - CHAINMAIL_HELMET
+    '17':
+        - CHAINMAIL_BOOTS
+    '18':
+        - CHAINMAIL_LEGGINGS
+    '19':
+        - CHAINMAIL_CHESTPLATE
+    '20':
+        - STONE_AXE;SHARPNESS-1
+    '21':
+        - CHAINMAIL_HELMET;PROTECTION-1
+    '22':
+        - CHAINMAIL_BOOTS;PROTECTION-1
+    '23':
+        - CHAINMAIL_LEGGINGS;PROTECTION-1
+    '24':
+        - CHAINMAIL_CHESTPLATE;PROTECTION-1
+    '25':
+        - STONE_SWORD;SHARPNESS-1
+    '26':
+        - STONE_SWORD;SHARPNESS-1
+    '27':
+        - GOLDEN_AXE
+    '28':
+        - GOLDEN_SWORD
+    '29':
+        - GOLDEN_HELMET
+    '30':
+        - GOLDEN_BOOTS
+    '31':
+        - GOLDEN_LEGGINGS
+    '32':
+        - GOLDEN_CHESTPLATE
+    '33':
+        - GOLDEN_AXE;SHARPNESS-1
+    '34':
+        - GOLDEN_HELMET;PROTECTION-1
+    '35':
+        - GOLDEN_BOOTS;PROTECTION-1
+    '36':
+        - GOLDEN_LEGGINGS;PROTECTION-1
+    '37':
+        - GOLDEN_CHESTPLATE;PROTECTION-1

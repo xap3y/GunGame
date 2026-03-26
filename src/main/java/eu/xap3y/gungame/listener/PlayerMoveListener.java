@@ -9,6 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.List;
 import java.util.UUID;
@@ -50,15 +51,26 @@ public class PlayerMoveListener implements Listener {
             double randomPowerY = 1.2 + Math.random() * 0.5;
             e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection().multiply(randomPower).setY(randomPowerY));
             XSound.BLOCK_PISTON_EXTEND.play(e.getPlayer(), .6f, .8f);
-            ConfigDb.FALL_DAMAGE_CANCEL.add(e.getPlayer().getUniqueId());
             ConfigDb.LAST_LAUNCHES.add(e.getPlayer().getUniqueId());
+
             GunGame.getInstance().getServer().getScheduler().runTaskLaterAsynchronously(GunGame.getInstance(), () -> {
                 ConfigDb.LAST_LAUNCHES.remove(e.getPlayer().getUniqueId());
             }, 20L);
 
-            GunGame.getInstance().getServer().getScheduler().runTaskLaterAsynchronously(GunGame.getInstance(), () -> {
-                ConfigDb.LAST_LAUNCHES.remove(e.getPlayer().getUniqueId());
-            }, 25L * 3L);
+            ///////// cancel fall damage for 3 seconds
+
+            ConfigDb.FALL_DAMAGE_CANCEL.add(e.getPlayer().getUniqueId());
+
+            if (ConfigDb.FALL_DAMAGE_CANCEL_TASK.containsKey(e.getPlayer().getUniqueId())) {
+                ConfigDb.FALL_DAMAGE_CANCEL_TASK.get(e.getPlayer().getUniqueId()).cancel();
+                ConfigDb.FALL_DAMAGE_CANCEL_TASK.remove(e.getPlayer().getUniqueId());
+            }
+
+            BukkitTask task = GunGame.getInstance().getServer().getScheduler().runTaskLaterAsynchronously(GunGame.getInstance(), () -> {
+                ConfigDb.FALL_DAMAGE_CANCEL.remove(e.getPlayer().getUniqueId());
+            }, 22L * 3L);
+
+            ConfigDb.FALL_DAMAGE_CANCEL_TASK.put(e.getPlayer().getUniqueId(), task);
         }
     }
 }

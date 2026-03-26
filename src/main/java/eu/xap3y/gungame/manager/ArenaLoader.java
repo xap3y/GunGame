@@ -25,6 +25,7 @@ public class ArenaLoader {
     private Deque<Arena> arenaPool = new ArrayDeque<Arena>();
 
     public ArenaLoader(@NotNull File arenaFile) {
+        GunGame.getTexter().logPos();
         this.arenasFile = arenaFile;
         if (!arenasFile.exists()) {
             try {
@@ -44,6 +45,7 @@ public class ArenaLoader {
     }
 
     public void saveArenas() {
+        GunGame.getTexter().logPos();
         try {
             arenasConfig.save(arenasFile);
         } catch (Exception e) {
@@ -57,6 +59,7 @@ public class ArenaLoader {
     }
 
     public Optional<Arena> loadArena(@NotNull String arenaName) {
+        GunGame.getTexter().logPos();
         GunGame.getTexter().console("&fLoading arena: &e" + arenaName);
         if (!arenaExists(arenaName)) {
             GunGame.getTexter().console("&cEmpty");
@@ -104,6 +107,7 @@ public class ArenaLoader {
     }
 
     public void saveArenaSafeSpot(@NotNull String arenaName, @NotNull Pair<Location, Location> safeSpot) {
+        GunGame.getTexter().logPos();
         if (!arenaExists(arenaName)) {
             return;
         }
@@ -118,6 +122,7 @@ public class ArenaLoader {
     }
 
     public void saveArenaDimension(@NotNull String arenaName, @NotNull Pair<Location, Location> dimension) {
+        GunGame.getTexter().logPos();
         if (!arenaExists(arenaName)) {
             return;
         }
@@ -163,6 +168,7 @@ public class ArenaLoader {
     }
 
     public List<Arena> loadAllArenas() {
+        GunGame.getTexter().logPos();
         return arenasConfig.getKeys(false).stream()
                 .map(this::loadArena)
                 .filter(Optional::isPresent)
@@ -171,6 +177,7 @@ public class ArenaLoader {
     }
 
     public void refreshArenaPool() {
+        GunGame.getTexter().logPos();
         arenaPool.clear();
         arenaPool.addAll(loadAllArenas().stream().filter(Arena::isComplete).filter(Arena::isEnabled).toList());
     }

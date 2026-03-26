@@ -8,6 +8,7 @@ import eu.xap3y.gungame.model.Arena;
 import eu.xap3y.gungame.util.Utils;
 import fr.mrmicky.fastboard.FastBoard;
 import lombok.NoArgsConstructor;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -31,6 +32,7 @@ public class LegacyBoardService implements ScoreboardInterface<FastBoard> {
 
     @Override
     public void loadConfig() {
+        GunGame.getTexter().logPos();
         BoardConfig boardConfig = new BoardConfig();
         boardConfig.setTitle(GunGame.getInstance().getConfig().getString("scoreboard.title", "§b§l✦  §e§lGunGame  §b§l✦"));
         boardConfig.setLines(GunGame.getInstance().getConfig().getStringList("scoreboard.lines"));
@@ -49,6 +51,7 @@ public class LegacyBoardService implements ScoreboardInterface<FastBoard> {
 
     @Override
     public void addBoard(Player p0) {
+        GunGame.getTexter().logPos();
         FastBoard board = new FastBoard(p0);
 
         board.updateTitle(Texter.colored(boardConfig.getTitle()));
@@ -88,19 +91,37 @@ public class LegacyBoardService implements ScoreboardInterface<FastBoard> {
             mapTime = "&cN/A";
         }
 
+        // KD rounded to 1 decimal
+        double kd = (cachedDto.getDeaths() == 0) ? cachedDto.getKills() : (double) cachedDto.getKills() / cachedDto.getDeaths();
+
+        String kdColor;
+        if (kd < 1) {
+            kdColor = "&c";
+        } else if (kd == 1) {
+            kdColor = "&e";
+        } else {
+            kdColor = "&a";
+        }
+
         Map<String, String> replace = new HashMap<>() {{
             put("map", currentArena);
             put("kills", cachedDto.getKills() + "");
             put("deaths", cachedDto.getDeaths() + "");
             put("level", "0");
             put("killstreak", GunGame.getInstance().getLevelingService().getKillstreak(p0) + "");
-            put("coins", cachedDto.getCoins() + "");
             put("xp", cachedDto.getXp() + "");
             put("event", "N/A");
             put("players", GunGame.getInstance().getArenaManager().getPlayers().size() + "");
             put("stage", GunGame.getInstance().getLevelingService().get(p0).getLevel() + "");
             put("maptime", mapTime);
+            put("kd", kdColor + (kd % 1 == 0 ? String.format("%.0f", kd) : String.format("%.1f", kd)));
         }};
+
+        if (GunGame.getEcon() != null) {
+            replace.put("coins", GunGame.getEcon().getBalance(Bukkit.getOfflinePlayer(p0)) + "");
+        } else {
+            replace.put("coins", "&cN/A");
+        }
 
         List<String> updatedLines = boardConfig.getLines()
                 .stream()
