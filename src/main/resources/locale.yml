@@ -19,9 +19,14 @@ already-have-speed: "&cYou already have that speed effect active!"
 upgrade-purchased: "&aYou have purchased &e{upgrade}. &6Level: &e{level}"
 upgrade-purchase-failed: "&cYou cannot purchase that upgrade right now!"
 upgrade-max-level: "&cYou have already reached the maximum level for that upgrade!"
+join-message: "&a{player} has joined the game!"
+quit-message: "&c{player} has quit the game!"
+death-message: "&c{player} died!"
+death-by-player-message: "&c{player} was killed by &e{killer}&c!"
 
 actionbar:
-    kill: "&aYou killed &e{player}&a! &6You are now level &e{level}&6!"
+    kill: "&aYou killed &e{player}&a! &6You are now level &e{stage}&6!"
+    kill-double: "&aYou killed &e{player}&a! &6You are now level &e{stage}&6! &5&l**DOUBLE UPGRADE**"
     death-by-player: "&cYou were killed by &e{killer}&c!"
     death: "&cYou were killed!"
 
@@ -54,7 +59,7 @@ gui:
 
         double_upgrade:
             name: "&eDouble Upgrade"
-            description:
+            lore:
                 - "&7Little chance to get 2 stages for 1 kill"
                 - ""
                 - "&6Level: &e{level}"
@@ -62,3 +67,29 @@ gui:
                 - "{progress}"
                 - " "
                 - "{button}"
+
+        life_steal:
+            name: "&cLife Steal"
+            lore:
+                - "&7Gives regeneration after kill"
+                - ""
+                - "&6Level: &e{level}"
+                - "&6Cost: &e{cost}$"
+                - "{progress}"
+                - " "
+                - "{button}"
+
+        kill_effect:
+            name: "&aKill Effect"
+            lore:
+                - "&7Chance to give you "
+                - "&7positive potion effects on kill"
+                - ""
+                - "&6Level: &e{level}"
+                - "&6Cost: &e{cost}$"
+                - "{progress}"
+                - " "
+                - "{button}"
+chat:
+    invalid-message: "&cYour message contains invalid characters!"
+    empty-message: "&cYou cannot send an empty message!"

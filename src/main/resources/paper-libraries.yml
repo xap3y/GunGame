@@ -5,5 +5,4 @@ libraries:
     - org.mariadb.jdbc:mariadb-java-client:${mariaDbVersion}
     - fr.mrmicky:fastboard:${fastBoardVersion}
     - com.github.cryptomorin:XSeries:${xSeriesVersion}
-    - eu.xap3y:xagui:${xaGuiVersion}
     - org.bstats:bstats-bukkit:${bStatsVersion}

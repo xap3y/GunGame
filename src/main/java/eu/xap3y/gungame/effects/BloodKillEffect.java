@@ -32,7 +32,7 @@ public class BloodKillEffect implements KillEffect {
 
             // We use BLOCK_CRACK with Redstone Block for a "bloody" look
             // packetMotion(bool, loc, xOff, yOff, zOff)
-            GunGame.getTexter().console("Spawning blood effect at " + spawnLoc + " for " + nearbyPlayers.size() + " nearby players.");
+            //GunGame.getTexter().console("Spawning blood effect at " + spawnLoc + " for " + nearbyPlayers.size() + " nearby players.");
             for (int i = 0; i < 10; i++) {
                 GunGame.getInstance().getParApi().LIST_1_8.BLOCK_CRACK
                         .of(Material.REDSTONE_BLOCK)

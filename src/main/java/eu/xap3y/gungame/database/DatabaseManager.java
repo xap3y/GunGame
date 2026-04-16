@@ -118,8 +118,7 @@ public class DatabaseManager {
                         "player_id INT NOT NULL, " +
                         "upgrade TINYINT UNSIGNED NOT NULL, " +
                         "level TINYINT UNSIGNED NOT NULL DEFAULT 0, " +
-                        "FOREIGN KEY (player_id) REFERENCES gg_players(id) ON DELETE CASCADE, " +
-                        "UNIQUE(player_id)" +
+                        "FOREIGN KEY (player_id) REFERENCES gg_players(id) ON DELETE CASCADE" +
                         ") ENGINE=InnoDB;");
 
             } catch (SQLException e) {

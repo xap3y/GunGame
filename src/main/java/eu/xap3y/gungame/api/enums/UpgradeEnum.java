@@ -2,7 +2,8 @@ package eu.xap3y.gungame.api.enums;
 
 public enum UpgradeEnum {
     DOUBLE_UPGRADE,
-    KILL_EFFECT;
+    KILL_EFFECT,
+    LIFE_STEAL;
 
     public static UpgradeEnum fromOrdinal(int ordinal) {
         for (UpgradeEnum upgrade : values()) {

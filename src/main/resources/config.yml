@@ -3,6 +3,17 @@ prefix: "&7[&6GunGame&7] &r"
 
 auto-join: true
 
+join-message: true
+quit-message: true
+death-message: true
+
+chat:
+    enabled: true
+    format: "§7[§e§l✦ §r§e{lvl}§7] §f{player} §7§l➵§r {message}"
+    allowed-characters: "a-zA-Z0-9_ "
+    allow-color-format-codes: false
+    admin-color: "§c"
+
 arena-rotate:
     enabled: true
     interval: 300 # in seconds

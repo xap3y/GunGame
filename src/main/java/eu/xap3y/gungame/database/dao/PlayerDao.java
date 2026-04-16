@@ -57,14 +57,14 @@ public class PlayerDao {
         return Mono.fromRunnable(() -> {
             try (Connection conn = dbManager.getConnection();
                  PreparedStatement ps = conn.prepareStatement(
-                         "INSERT INTO gg_player_upgrades (player_id, upgrade, level) VALUES ((SELECT id FROM gg_players WHERE uuid = ?), ?, ?) " +
-                                 "ON DUPLICATE KEY UPDATE level = ?"
+                         "INSERT INTO gg_player_upgrades (player_id, upgrade, level) " +
+                                 "VALUES ((SELECT id FROM gg_players WHERE uuid = ?), ?, ?) " +
+                                 "ON DUPLICATE KEY UPDATE level = VALUES(level)"
                  )) {
                 for (Map.Entry<UpgradeEnum, Integer> entry : upgrades.getUpgrades().entrySet()) {
                     ps.setString(1, uuid.toString());
                     ps.setInt(2, entry.getKey().ordinal());
                     ps.setInt(3, entry.getValue());
-                    ps.setInt(4, entry.getValue());
                     ps.addBatch();
                 }
                 ps.executeBatch();

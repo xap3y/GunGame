@@ -33,6 +33,11 @@ public class Progression {
         this.steps = buildProgression();
     }
 
+    public int getNextLevel(int before, int amount) {
+        int next = before + amount;
+        return Math.min(next, maxIndex());
+    }
+
     private List<List<ItemStack>> buildProgression() {
         GunGame.getTexter().logPos();
         List<List<ItemStack>> finalSteps = new ArrayList<>();

@@ -73,6 +73,18 @@ public class DevCommand {
         }
     }
 
+    @Command(ConfigDb.COMMAND_BASE + " dev stream_debug")
+    @Permission(value = {ConfigDb.PERMISSION_NODE + "*", ConfigDb.PERMISSION_NODE + "dev"}, mode = Permission.Mode.ANY_OF)
+    public void streamDebug(
+            CommandSender ctx
+    ) {
+        boolean next = !ConfigDb.STREAM_DEBUG_CHAT;
+
+        ConfigDb.STREAM_DEBUG_CHAT = next;
+
+        GunGame.getTexter().response(ctx, "&fStream debug chat is now " + (next ? "&aenabled" : "&cdisabled") + ".");
+    }
+
     @Command(ConfigDb.COMMAND_BASE + " dev progression")
     @Permission(value = {ConfigDb.PERMISSION_NODE + "*", ConfigDb.PERMISSION_NODE + "dev"}, mode = Permission.Mode.ANY_OF)
     public void progression(

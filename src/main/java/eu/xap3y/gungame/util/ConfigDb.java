@@ -22,6 +22,8 @@ public class ConfigDb {
     public static final String MAIN_COMMAND = "@MAIN_COMMAND@";
     public static final GameMode GAMEMODE_SET = GameMode.ADVENTURE;
 
+    public static boolean STREAM_DEBUG_CHAT = false;
+
     public static final Map<UUID, Pair<Location, Location>> POS_CACHE = new HashMap<>();
 
     public static final Set<UUID> LAST_LAUNCHES = new HashSet<>();

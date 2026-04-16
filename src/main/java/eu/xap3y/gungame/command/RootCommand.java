@@ -153,4 +153,25 @@ public class RootCommand {
         GunGame.getInstance().getArenaManager().removePlayer(player.getUniqueId());
         GunGame.getTexter().responseLang(ctx, "arena-left");
     }
+
+    @Command(ConfigDb.COMMAND_BASE + " join")
+    @Permission(value = {ConfigDb.PERMISSION_NODE + "*", ConfigDb.PERMISSION_NODE + "exit"}, mode = Permission.Mode.ANY_OF)
+    public void joinCommand(
+            CommandSender ctx
+    ) {
+        if (!(ctx instanceof org.bukkit.entity.Player player)) {
+            GunGame.getTexter().responseLang(ctx, "no-player");
+            return;
+        }
+
+        boolean playing = GunGame.getInstance().getArenaManager().isPlayerInArena(player.getUniqueId());
+
+        if (!playing) {
+            GunGame.getTexter().responseLang(ctx, "not-in-arena");
+            return;
+        }
+
+        GunGame.getInstance().getArenaManager().removePlayer(player.getUniqueId());
+        GunGame.getTexter().responseLang(ctx, "arena-left");
+    }
 }

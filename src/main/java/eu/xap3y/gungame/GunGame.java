@@ -8,15 +8,13 @@ import eu.xap3y.gungame.command.DevCommand;
 import eu.xap3y.gungame.command.RootCommand;
 import eu.xap3y.gungame.command.SetupCommand;
 import eu.xap3y.gungame.database.DatabaseManager;
-import eu.xap3y.gungame.listener.GunGameListener;
-import eu.xap3y.gungame.listener.PlayerConnectListener;
-import eu.xap3y.gungame.listener.PlayerMoveListener;
-import eu.xap3y.gungame.listener.WandListener;
+import eu.xap3y.gungame.listener.*;
 import eu.xap3y.gungame.manager.*;
 import eu.xap3y.gungame.model.Progression;
 import eu.xap3y.gungame.service.LegacyBoardService;
 import eu.xap3y.gungame.service.LevelingService;
 import eu.xap3y.gungame.service.Texter;
+import eu.xap3y.gungame.util.ConfigDb;
 import eu.xap3y.xagui.XaGui;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -69,16 +67,9 @@ public final class GunGame extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
-        //  Initializing XaGUI  \\
-        xagui = new XaGui(this);
-
-        xagui.setCloseButtonSound(XSound.BLOCK_COPPER_DOOR_CLOSE.or(XSound.BLOCK_WOODEN_DOOR_CLOSE).get());
-
         //  Creating parser & Parsing command classes below  \\
         CommandManager cmdManager = new CommandManager(true);
         cmdManager.parseLegacy(new RootCommand(), new SetupCommand(), new DevCommand());
-
-
         //  Saving if not exists & Reloading config file  \\
         ConfigManager.reloadConfig();
 
@@ -168,6 +159,14 @@ public final class GunGame extends JavaPlugin {
                 boardApi.updateAllBoardTimes();
             }
         }, 0L, 20L);
+
+        //  Initializing XaGUI  \\
+        xagui = new XaGui(this);
+        xagui.injectCommand();
+
+        xagui.setCloseButtonSound(XSound.BLOCK_COPPER_DOOR_CLOSE.or(XSound.BLOCK_WOODEN_DOOR_CLOSE).get());
+
+        registerPermission(ConfigDb.PERMISSION_NODE + "chat.bypass");
     }
 
     private void registerPermission(String permission) {
@@ -180,7 +179,10 @@ public final class GunGame extends JavaPlugin {
                 new GunGameListener(GunGame.getInstance().getLevelingService()),
                 new PlayerConnectListener(),
                 new PlayerMoveListener(),
-                new WandListener()
+                new EntityDamageListener(),
+                new ProjectileLaunchListener(),
+                new WandListener(),
+                new ChatListener()
         };
 
         for (Listener listener : listeners) {

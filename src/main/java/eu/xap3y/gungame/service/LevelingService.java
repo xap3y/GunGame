@@ -33,11 +33,12 @@ public class LevelingService {
         return killStreak.getOrDefault(p0, 0);
     }
 
-    public boolean addKill(UUID uuid) {
+    public boolean addKill(UUID uuid, int amount) {
         LevelProgress p = get(uuid);
         int before = p.getLevel();
         if (before < progression.maxIndex()) {
-            p.increment();
+            int newLevel = progression.getNextLevel(before, amount);
+            p.setLevel(newLevel);
         }
         if (killStreak.containsKey(uuid)) {
             killStreak.replace(uuid, killStreak.get(uuid)+1);
@@ -80,20 +81,35 @@ public class LevelingService {
         int amountToDecrement = 1;
         if (killStreak.containsKey(uuid)) {
             int streak = killStreak.get(uuid);
-            if (streak >= 5) {
+            if (streak >= 15) {
+                amountToDecrement += 4;
+            } else if (streak >= 7) {
+                amountToDecrement += 2;
+            } else if (streak >= 3) {
                 amountToDecrement += 1;
             }
         }
+
+        if (before > 80) {
+            amountToDecrement += 20;
+        } else if (before > 62) {
+            amountToDecrement += 10;
+        } else if (before > 50) {
+            amountToDecrement += 6;
+        } else if (before > 30) {
+            amountToDecrement += 4;
+        }
+
         if (before > 10 && before <= 20) {
             amountToDecrement += 1;
         } else if (before > 20) {
             int rand = ThreadLocalRandom.current().nextInt(1, 101); // 1-100
             if (rand <= 60) {
-                amountToDecrement += 2;
-            } else if (rand <= 97) {
                 amountToDecrement += 3;
-            } else {
+            } else if (rand <= 97) {
                 amountToDecrement += 4;
+            } else {
+                amountToDecrement += 6;
             }
         }
         p.decrement(amountToDecrement);

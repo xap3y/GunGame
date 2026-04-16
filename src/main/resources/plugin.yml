@@ -9,8 +9,13 @@ website: https://pvpcraft.cz
 load: POSTWORLD
 
 depend:
+    - XaLib
     - Vault
 
 softdepend: [ PlaceholderAPI, Multiverse-Core, LiteEco ]
 
+commands:
+    xagui:
+        description: XaGui control center
+        usage: /xagui
 

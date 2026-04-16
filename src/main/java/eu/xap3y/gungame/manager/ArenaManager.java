@@ -64,6 +64,7 @@ public class ArenaManager {
         resetArena();
         currentArena = arena;
         arena.getSpawn().getWorld().setSpawnLocation(arena.getSpawn().getBlockX(), arena.getSpawn().getBlockY(), arena.getSpawn().getBlockZ());
+        Bukkit.getScheduler().runTask(GunGame.getInstance(), () -> arena.getSpawn().getWorld().setTime(0));
         arenaRotationStartTime = LocalDateTime.now();
         restartArenaRotationTask();
     }

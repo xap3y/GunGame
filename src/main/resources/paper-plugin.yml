@@ -16,6 +16,9 @@ dependencies:
     server:
         Vault:
             required: true
+        XaLib:
+            required: true
+            load: BEFORE
         PlaceholderAPI:
             required: false
         Multiverse-Core:

@@ -83,7 +83,7 @@ public class UpgradesShopGui extends VirtualMenu<Player> {
                     buyUpgrade(ctx, UpgradeEnum.DOUBLE_UPGRADE);
                 });
 
-        gui.setSlot(10, doubleChance);
+        gui.setSlot(11, doubleChance);
 
         List<String> killEffectLore = getUpgradeLore(UpgradeEnum.KILL_EFFECT, upgradeLevels.get(UpgradeEnum.KILL_EFFECT), upgradeCosts.get(UpgradeEnum.KILL_EFFECT));
         GuiButton killEffect = new GuiButton(Utils.removeAttributes(XMaterial.POTION.parseItem()))
@@ -98,7 +98,22 @@ public class UpgradesShopGui extends VirtualMenu<Player> {
                     buyUpgrade(ctx, UpgradeEnum.KILL_EFFECT);
                 });
 
-        gui.setSlot(12, killEffect);
+        gui.setSlot(13, killEffect);
+
+        List<String> lifeStealLore = getUpgradeLore(UpgradeEnum.LIFE_STEAL, upgradeLevels.get(UpgradeEnum.LIFE_STEAL), upgradeCosts.get(UpgradeEnum.LIFE_STEAL));
+        GuiButton lifeSteal = new GuiButton(Utils.removeAttributes(XMaterial.GOLDEN_APPLE.parseItem()))
+                .setName(lang.get("gui.upgrades." + UpgradeEnum.LIFE_STEAL.name().toLowerCase() + ".name", "&c&lLife Steal"))
+                .setLoreList(lifeStealLore)
+                .withListener(e -> {
+                    if (!open.get()) {
+                        return;
+                    }
+                    open.set(false);
+                    gui.close(e.getPlayer());
+                    buyUpgrade(ctx, UpgradeEnum.LIFE_STEAL);
+                });
+
+        gui.setSlot(15, lifeSteal);
 
         return gui;
     }
@@ -108,7 +123,13 @@ public class UpgradesShopGui extends VirtualMenu<Player> {
         boolean full = level >= MAX_LEVEL;
 
         LangManager lang = GunGame.getInstance().getLangManager();
-        return lang.getList("gui.upgrades." + upgrade.name().toLowerCase() + ".lore", "&7Cost: &a{cost} coins")
+        List<String> lore = lang.getList("gui.upgrades." + upgrade.name().toLowerCase() + ".lore", "&7Cost: &a{cost} coins");
+        if (full) {
+            // remove line with {cost} placeholder if max level reached
+            lore = lore.stream().filter(line -> !line.contains("{cost}")).toList();
+        }
+
+        return lore
                 .stream()
                 .map(line -> line
                         .replace("{level}", level + "")
@@ -157,6 +178,7 @@ public class UpgradesShopGui extends VirtualMenu<Player> {
                     GunGame.getEcon().withdrawPlayer(player, cost);
                     GunGame.getTexter().responseLang(player, "upgrade-purchased", Map.of("upgrade", upgrade.name(), "level", nextLevel + ""));
                     XSound.ENTITY_VILLAGER_YES.play(player, 1f, 1f);
+                    reopen(player);
                 })
                 .doOnError(throwable -> {
                     GunGame.getTexter().responseLang(player, "upgrade-purchase-failed");
@@ -174,5 +196,9 @@ public class UpgradesShopGui extends VirtualMenu<Player> {
             }
         }
         return progression.toString();
+    }
+
+    public void reopen(Player player) {
+        build(player).open(player);
     }
 }

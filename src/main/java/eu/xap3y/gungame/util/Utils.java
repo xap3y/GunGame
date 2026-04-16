@@ -2,10 +2,16 @@ package eu.xap3y.gungame.util;
 
 import com.cryptomorin.xseries.XItemStack;
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XPotion;
+import eu.xap3y.gungame.GunGame;
+import eu.xap3y.gungame.api.enums.UpgradeEnum;
+import eu.xap3y.gungame.database.dto.PlayerUpgradesDto;
 import eu.xap3y.xagui.models.GuiButton;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -30,6 +36,28 @@ public class Utils {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    public static void processLifeSteal(LivingEntity p0) {
+        PlayerUpgradesDto cache = GunGame.getInstance().getDatabaseManager().getPlayerDao().getPlayerUpgradeCache().get(p0.getUniqueId());
+        if (cache == null) {return;}
+        int level = cache.getUpgradeLevel(UpgradeEnum.LIFE_STEAL);
+        if (level <= 0) {return;}
+
+        // max 5 levels, give regeneration II for 0.5 each level, so max 2.5 seconds of regeneration II at level 5
+        int duration = (int) (level * 0.5 * 20); //
+        XPotion.REGENERATION.buildPotionEffect(duration, 2).apply(p0);
+    }
+
+    public static void processRandomEffect(LivingEntity p0) {
+        PlayerUpgradesDto cache = GunGame.getInstance().getDatabaseManager().getPlayerDao().getPlayerUpgradeCache().get(p0.getUniqueId());
+        if (cache == null) {return;}
+        int level = cache.getUpgradeLevel(UpgradeEnum.LIFE_STEAL);
+        if (level <= 0) {return;}
+
+        // max 5 levels, give regeneration II for 0.5 each level, so max 2.5 seconds of regeneration II at level 5
+        int duration = (int) (level * 0.5 * 20); //
+        XPotion.REGENERATION.buildPotionEffect(duration, 2).apply(p0);
     }
 
     public static ItemStack removeAttributes(@NotNull ItemStack item) {

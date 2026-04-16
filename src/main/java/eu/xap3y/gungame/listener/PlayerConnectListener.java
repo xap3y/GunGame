@@ -2,6 +2,7 @@ package eu.xap3y.gungame.listener;
 
 import eu.xap3y.gungame.GunGame;
 import eu.xap3y.gungame.service.PotionService;
+import eu.xap3y.gungame.service.Texter;
 import eu.xap3y.gungame.util.ConfigDb;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -28,6 +29,14 @@ public class PlayerConnectListener implements Listener {
         GunGame.getTexter().debugLog("Player " + event.getPlayer().getName() + " JOIN (" + event.getPlayer().getUniqueId() + ")");
         boolean autoJoin = GunGame.getInstance().getConfig().getBoolean("auto-join", true);
         if (!autoJoin) return;
+
+        boolean joinMessage = GunGame.getInstance().getConfig().getBoolean("join-message", true);
+        if (joinMessage) {
+            String msg = GunGame.getInstance().getLangManager().get("join-message", "&e{player} has joined the game!").replace("{player}", event.getPlayer().getName());
+            event.setJoinMessage(Texter.colored(msg));
+        } else event.setJoinMessage(null);
+        event.getPlayer().setLevel(0);
+        event.getPlayer().setExp(0);
         GunGame.getTexter().debugLog("Auto-joining player " + event.getPlayer().getName() + " to arena");
         event.getPlayer().setHealth(20);
         event.getPlayer().setFoodLevel(20);
@@ -43,6 +52,13 @@ public class PlayerConnectListener implements Listener {
         ConfigDb.POS_CACHE.remove(event.getPlayer().getUniqueId());
 
         if (GunGame.getInstance().getArenaManager().isPlayerInArena(event.getPlayer().getUniqueId())) {
+
+            boolean quitMessage = GunGame.getInstance().getConfig().getBoolean("quit-message", true);
+            if (quitMessage) {
+                String msg = GunGame.getInstance().getLangManager().get("quit-message", "&e{player} has left the game!").replace("{player}", event.getPlayer().getName());
+                event.setQuitMessage(Texter.colored(msg));
+            } else event.setQuitMessage(null);
+
             GunGame.getInstance().getArenaManager().leavePlayerFromArena(event.getPlayer());
 
             if (!kickedPlayers.contains(event.getPlayer().getUniqueId())) {

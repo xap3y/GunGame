@@ -48,7 +48,7 @@ public class ShopGui extends VirtualMenu<String> {
 
         gui.setSlot(14, XMaterial.BARRIER.get());
 
-        GuiButton buyUpgrades = new GuiButton(XMaterial.GUNPOWDER)
+        GuiButton buyUpgrades = new GuiButton(XMaterial.GUNPOWDER.parseItem())
                 .setName(cfg.getString("shop.items.upgrades.name", "&eKill Effects"))
                 .setLoreList(cfg.getStringList("shop.items.upgrades.lore"))
                 .withListener(e -> {
@@ -68,7 +68,7 @@ public class ShopGui extends VirtualMenu<String> {
 
         gui.setSlot(16, buyUpgrades);
 
-        GuiButton speed = new GuiButton(XMaterial.FEATHER)
+        GuiButton speed = new GuiButton(XMaterial.FEATHER.parseItem())
                 .setName(cfg.getString("shop.items.speed.name", "&eSpeed"))
                 .setLoreList(cfg.getStringList("shop.items.speed.lore"))
                 .withListener(e -> {;
@@ -101,7 +101,7 @@ public class ShopGui extends VirtualMenu<String> {
 
         gui.setSlot(12, speed);
 
-        GuiButton snowball = new GuiButton(XMaterial.SNOWBALL)
+        GuiButton snowball = new GuiButton(XMaterial.SNOWBALL.parseItem())
                 .setName(cfg.getString("shop.items.snowball.name", "&eSpeed"))
                 .setLoreList(cfg.getStringList("shop.items.snowball.lore"))
                 .withListener(e -> {

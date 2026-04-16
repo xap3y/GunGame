@@ -4,6 +4,7 @@ import eu.xap3y.gungame.GunGame;
 import eu.xap3y.gungame.api.dto.TextModifierDto;
 import eu.xap3y.gungame.api.dto.TexterObjDto;
 import eu.xap3y.gungame.api.enums.DefaultFontInfo;
+import eu.xap3y.gungame.util.ConfigDb;
 import eu.xap3y.xagui.adapter.ParseUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -169,6 +170,11 @@ public class Texter {
         String levelName = level.getName() != null ? level.getName() : "";
         String currentTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
         String textToLog = String.format("[%s] [%s] %s%n", currentTime, levelName, text);
+
+        if (ConfigDb.STREAM_DEBUG_CHAT) {
+            Bukkit.broadcastMessage(Texter.colored("&8[D] &f" + text));
+        }
+
         try {
             java.nio.file.Files.write(debugFile.toPath(), textToLog.getBytes(), java.nio.file.StandardOpenOption.APPEND);
         } catch (Exception ignored) {

@@ -6,6 +6,7 @@ import eu.xap3y.gungame.api.enums.KillEffectType;
 import eu.xap3y.gungame.service.LevelingService;
 import eu.xap3y.gungame.service.PotionService;
 import eu.xap3y.gungame.service.Texter;
+import eu.xap3y.gungame.service.UpgradeService;
 import eu.xap3y.gungame.util.ActionBar;
 import eu.xap3y.gungame.util.ConfigDb;
 import eu.xap3y.gungame.util.UpgradeUtil;
@@ -59,10 +60,14 @@ public class GunGameListener implements Listener {
                 // Optional: Ensure they are full health/hunger
                 player.setHealth(player.getMaxHealth());
                 player.setFoodLevel(20);
+                int lvl = levelingService.get(player.getUniqueId()).getLevel();
+                player.setLevel(lvl);
+                player.setExp(0f);
             }
         }, 1L);
 
-        GunGame.getTexter().response(player, "Stage: " + levelingService.get(player.getUniqueId()).getLevel());
+        if (ConfigDb.STREAM_DEBUG_CHAT)
+            GunGame.getTexter().response(player, "Stage: " + levelingService.get(player.getUniqueId()).getLevel());
     }
 
     @EventHandler
@@ -99,6 +104,7 @@ public class GunGameListener implements Listener {
             event.setCancelled(true);
             ConfigDb.FALL_DAMAGE_CANCEL.remove(victim.getUniqueId());
             if (ConfigDb.FALL_DAMAGE_CANCEL_TASK.containsKey(victim.getUniqueId())) {
+                GunGame.getTexter().debugLog("&cConfigDb.FALL_DAMAGE_CANCEL.remove&cancel(" + victim.getName() + ") &e#EntityDamageEvent");
                 ConfigDb.FALL_DAMAGE_CANCEL_TASK.get(victim.getUniqueId()).cancel();
                 ConfigDb.FALL_DAMAGE_CANCEL_TASK.remove(victim.getUniqueId());
             }
@@ -129,6 +135,7 @@ public class GunGameListener implements Listener {
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
 
+        event.setDeathMessage(null);
         if (ConfigDb.LAST_DEATHS_CALLS.contains(event.getEntity().getUniqueId())) {
             GunGame.getTexter().debugLog("Skipping death processing for " + event.getEntity().getName() + " due to recent death call.");
             return;
@@ -141,9 +148,8 @@ public class GunGameListener implements Listener {
             return;
         }
 
-        GunGame.getTexter().console("Player " + event.getEntity().getName() + " died, processing death...");
 
-        event.setDeathMessage(null);
+        GunGame.getTexter().console("Player &e" + event.getEntity().getName() + "&f died, processing death...");
 
         Player victim = event.getEntity();
         Player killer;
@@ -159,6 +165,23 @@ public class GunGameListener implements Listener {
 
         boolean isWithKiller = killer != null && killer != victim && killer.getGameMode() == ConfigDb.GAMEMODE_SET;
 
+        //GunGame.getTexter().broadcast("&e" + victim.getName() + " &fwas killed by " + ((isWithKiller) ? killer.getName() : "&4N/A&f") + " | isWithKiller: " + isWithKiller);
+
+        boolean deathMessage = GunGame.getInstance().getConfig().getBoolean("death-message", true);
+        if (deathMessage) {
+            String path = (isWithKiller) ? "death-by-player-message" : "death-message";
+            String msg = GunGame.getInstance().getLangManager().get(path, "&c{player} died!").replace("{player}", victim.getName()).replace("{killer}", (isWithKiller) ? killer.getName() : "&cN/A");
+            event.setDeathMessage(Texter.colored(msg));
+        } else {
+            event.setDeathMessage(null);
+        }
+
+        if (ConfigDb.FALL_DAMAGE_CANCEL_TASK.containsKey(victim.getUniqueId())) {
+            GunGame.getTexter().debugLog("&cConfigDb.FALL_DAMAGE_CANCEL.remove&cancel(" + victim.getName() + ") &e#PlayerDeathEvent");
+            ConfigDb.FALL_DAMAGE_CANCEL_TASK.get(victim.getUniqueId()).cancel();
+            ConfigDb.FALL_DAMAGE_CANCEL_TASK.remove(victim.getUniqueId());
+        }
+
         GunGame.getTexter().debugLog("onDeath for " + victim.getName() + " | isWithKilled = " + isWithKiller + " | Killer: " + ((killer != null) ? killer.getName() : "N/A"));
 
         // Handle killer upgrade
@@ -166,18 +189,25 @@ public class GunGameListener implements Listener {
 
             ConfigDb.KILL_EFFECT_MAP.get(KillEffectType.BLOOD).playEffect(victim.getLocation());
 
-            boolean leveled = levelingService.addKill(killer.getUniqueId());
+            boolean doubleUpgrade = UpgradeService.getInstance().processDoubleUpgrade(killer);
+            int lvl = (doubleUpgrade) ? 2 : 1;
+            boolean leveled = levelingService.addKill(killer.getUniqueId(), lvl);
 
-            String msg = GunGame.getInstance().getLangManager().get("actionbar.kill");
+
+            String msg = GunGame.getInstance().getLangManager().get("actionbar.kill" + ((doubleUpgrade) ? "-double" : ""));
             msg = msg
                     .replace("{player}", victim.getName())
                     .replace("{stage}", levelingService.get(killer.getUniqueId()).getLevel() + "");
 
             if (leveled) {
+                killer.setLevel(killer.getLevel()+lvl);
                 applyLoadout(killer);
                 XSound.ENTITY_PLAYER_LEVELUP.play(killer, .7f, 1.5f);
                 ActionBar.sendActionbar(killer, Texter.colored(msg));
             }
+
+            UpgradeService.getInstance().processLifeSteal(killer);
+            UpgradeService.getInstance().processRandomEffect(killer);
         }
 
         // Handle victim downgrade
