@@ -21,10 +21,18 @@ arena-rotate:
 database:
     host: "localhost"
     port: 3306
-    name: "gungame_db"
+    database: "gungame_db"
     user: "root"
     password: "password123"
     useSSL: false
+
+leaderboard:
+    enabled: true
+    update-interval: 60
+    max-entries: 10
+    format: "&e{player} &7-> &r{value}"
+    no-entry: "&cN/A"
+
 
 # Variables:
 #  {map}, {kills}, {deaths}, {level}, {killstreak}
@@ -155,3 +163,129 @@ steps:
         - GOLDEN_LEGGINGS;PROTECTION-1
     '37':
         - GOLDEN_CHESTPLATE;PROTECTION-1
+    '38':
+        - GOLDEN_SWORD;SHARPNESS-1
+    '39':
+        - IRON_AXE
+    '40':
+        - IRON_BOOTS
+    '41':
+        - IRON_LEGGINGS
+    '42':
+        - IRON_CHESTPLATE
+    '43':
+        - IRON_HELMET
+    '44':
+        - IRON_SWORD
+    '45':
+        - IRON_AXE;SHARPNESS-1
+    '46':
+        - IRON_BOOTS;PROTECTION-1
+    '47':
+        - IRON_LEGGINGS;PROTECTION-1
+    '48':
+        - IRON_CHESTPLATE;PROTECTION-1
+    '49':
+        - IRON_HELMET;PROTECTION-1
+    '50':
+        - IRON_SWORD;SHARPNESS-1
+    '51':
+        - IRON_AXE;SHARPNESS-2
+    '52':
+        - IRON_BOOTS;PROTECTION-2
+    '53':
+        - IRON_LEGGINGS;PROTECTION-2
+    '54':
+        - IRON_CHESTPLATE;PROTECTION-2
+    '55':
+        - IRON_HELMET;PROTECTION-2
+    '56':
+        - IRON_SWORD;SHARPNESS-2
+    '57':
+        - DIAMOND_AXE
+    '58':
+        - DIAMOND_BOOTS
+    '59':
+        - DIAMOND_LEGGINGS
+    '60':
+        - DIAMOND_CHESTPLATE
+    '61':
+        - DIAMOND_HELMET
+    '62':
+        - DIAMOND_SWORD
+    '63':
+        - DIAMOND_AXE;SHARPNESS-1
+    '64':
+        - DIAMOND_BOOTS;PROTECTION-1
+    '65':
+        - DIAMOND_LEGGINGS;PROTECTION-1
+    '66':
+        - DIAMOND_CHESTPLATE;PROTECTION-1
+    '67':
+        - DIAMOND_HELMET;PROTECTION-1
+    '68':
+        - DIAMOND_SWORD;SHARPNESS-1
+    '69':
+        - DIAMOND_AXE;SHARPNESS-2
+    '70':
+        - DIAMOND_BOOTS;PROTECTION-2
+    '71':
+        - DIAMOND_LEGGINGS;PROTECTION-2
+    '72':
+        - DIAMOND_CHESTPLATE;PROTECTION-2
+    '73':
+        - DIAMOND_HELMET;PROTECTION-2
+    '74':
+        - DIAMOND_SWORD;SHARPNESS-2
+    '75':
+        - DIAMOND_AXE;SHARPNESS-3
+    '76':
+        - DIAMOND_BOOTS;PROTECTION-3
+    '77':
+        - DIAMOND_LEGGINGS;PROTECTION-3
+    '78':
+        - DIAMOND_CHESTPLATE;PROTECTION-3
+    '79':
+        - DIAMOND_HELMET;PROTECTION-3
+    '80':
+        - DIAMOND_SWORD;SHARPNESS-3
+    '81':
+        - DIAMOND_AXE;SHARPNESS-4
+    '82':
+        - DIAMOND_BOOTS;PROTECTION-4
+    '83':
+        - DIAMOND_LEGGINGS;PROTECTION-4
+    '84':
+        - DIAMOND_CHESTPLATE;PROTECTION-4
+    '85':
+        - DIAMOND_HELMET;PROTECTION-4
+    '86':
+        - DIAMOND_SWORD;SHARPNESS-4
+    '87':
+        - DIAMOND_AXE;SHARPNESS-5
+    '88':
+        - DIAMOND_BOOTS;PROTECTION-4;THORNS-1
+    '89':
+        - DIAMOND_LEGGINGS;PROTECTION-4;THORNS-1
+    '90':
+        - DIAMOND_CHESTPLATE;PROTECTION-4;THORNS-1
+    '91':
+        - DIAMOND_HELMET;PROTECTION-4;THORNS-1
+    '92':
+        - DIAMOND_SWORD;SHARPNESS-5;KNOCKBACK-1
+    '93':
+        - DIAMOND_SWORD;SHARPNESS-5;FIRE_ASPECT-1
+    '94':
+        - DIAMOND_BOOTS;PROTECTION-4;THORNS-2
+    '95':
+        - DIAMOND_LEGGINGS;PROTECTION-4;THORNS-2
+    '96':
+        - DIAMOND_CHESTPLATE;PROTECTION-4;THORNS-2
+    '97':
+        - DIAMOND_HELMET;PROTECTION-4;THORNS-2
+    '98':
+        - DIAMOND_SWORD;SHARPNESS-5;FIRE_ASPECT-2
+    '99':
+        - DIAMOND_SWORD;SHARPNESS-5;FIRE_ASPECT-2;KNOCKBACK-2
+    '100':
+        - DIAMOND_SWORD;SHARPNESS-10;FIRE_ASPECT-2;KNOCKBACK-2

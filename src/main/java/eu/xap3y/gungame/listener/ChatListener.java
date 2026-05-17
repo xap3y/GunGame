@@ -11,12 +11,14 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 public class ChatListener implements Listener {
 
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onChat(AsyncPlayerChatEvent event) {
 
         boolean enabled = GunGame.getInstance().getConfig().getBoolean("chat.enabled", true);
 
         if (!enabled) {
+            return;
+        } else if (!GunGame.getInstance().getArenaManager().isPlayerInArena(event.getPlayer().getUniqueId())) {
             return;
         }
 
@@ -55,7 +57,8 @@ public class ChatListener implements Listener {
 
         String formatted = format.replace("{lvl}", String.valueOf(level))
                 .replace("{player}", playerFormatted)
-                .replace("{message}", messageToFormat);
+                .replace("%", "%%")
+                .replace("{message}", "%2$s");
 
         event.setFormat(formatted);
     }

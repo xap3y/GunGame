@@ -1,9 +1,11 @@
 package eu.xap3y.gungame.listener;
 
 import eu.xap3y.gungame.GunGame;
+import eu.xap3y.gungame.manager.LeaderBoardManager;
 import eu.xap3y.gungame.service.PotionService;
 import eu.xap3y.gungame.service.Texter;
 import eu.xap3y.gungame.util.ConfigDb;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -29,6 +31,11 @@ public class PlayerConnectListener implements Listener {
         GunGame.getTexter().debugLog("Player " + event.getPlayer().getName() + " JOIN (" + event.getPlayer().getUniqueId() + ")");
         boolean autoJoin = GunGame.getInstance().getConfig().getBoolean("auto-join", true);
         if (!autoJoin) return;
+
+        // refresh leaderboard cache if first player joins
+        if (Bukkit.getOnlinePlayers().size() == 1) {
+            LeaderBoardManager.get().getCacheService().refreshWholeCache();
+        }
 
         boolean joinMessage = GunGame.getInstance().getConfig().getBoolean("join-message", true);
         if (joinMessage) {

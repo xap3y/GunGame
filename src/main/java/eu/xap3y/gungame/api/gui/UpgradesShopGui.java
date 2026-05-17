@@ -25,7 +25,7 @@ public class UpgradesShopGui extends VirtualMenu<Player> {
     private static final int MAX_LEVEL = 5;
 
     public UpgradesShopGui() {
-        super("&bUpgrades Shop", 3, GunGame.getInstance().getXagui());
+        super(GunGame.getInstance().getLangManager().get("gui-titles.upgrades", "&b&lUpgrades"), 3, GunGame.getInstance().getXagui());
     }
 
     @Override

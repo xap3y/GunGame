@@ -12,7 +12,7 @@ import org.jspecify.annotations.NonNull;
 public class StatsGui extends VirtualMenu<Player> {
 
     public StatsGui() {
-        super("&6GunGame Stats", 3, GunGame.getInstance().getXagui());
+        super(GunGame.getInstance().getLangManager().get("gui-titles.stats", "&b&lStats"), 3, GunGame.getInstance().getXagui());
     }
 
     @Override

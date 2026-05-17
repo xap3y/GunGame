@@ -217,7 +217,8 @@ public class GunGameListener implements Listener {
                     () -> {
                         applyLoadout(victim);
                         boolean downgraded = levelingService.addDeath(victim.getUniqueId());
-                        String msg = (isWithKiller) ? GunGame.getInstance().getLangManager().get("actionbar.death-by-player") : GunGame.getInstance().getLangManager().get("actionbar.death");
+                        String deathMsgPath = (downgraded) ? "downgrade" : "death";
+                        String msg = GunGame.getInstance().getLangManager().get("actionbar." + deathMsgPath, "&cYou died!");
                         msg = msg
                                 .replace("{killer}", (isWithKiller) ? killer.getName() : "Unknown")
                                 .replace("{stage}", levelingService.get(victim.getUniqueId()).getLevel() + "");

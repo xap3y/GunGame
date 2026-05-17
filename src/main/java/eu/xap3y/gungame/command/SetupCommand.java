@@ -1,7 +1,6 @@
 package eu.xap3y.gungame.command;
 
 import eu.xap3y.gungame.GunGame;
-import eu.xap3y.gungame.manager.ArenaLoader;
 import eu.xap3y.gungame.model.Arena;
 import eu.xap3y.gungame.util.ConfigDb;
 import eu.xap3y.gungame.util.Utils;
@@ -77,6 +76,23 @@ public class SetupCommand {
             current.setSpawn(loc);
         }
         GunGame.getTexter().responseLang(ctx, "arena-spawn-set", Map.of("arena", name));
+    }
+
+    @Command(ConfigDb.COMMAND_BASE + " setup set-name <name> <displayName>")
+    @Permission(value = {ConfigDb.PERMISSION_NODE + "*", ConfigDb.PERMISSION_NODE + "setup"}, mode = Permission.Mode.ANY_OF)
+    public void arenaSetSpawn(
+            @Argument(value = "name", suggestions = "maps") String name,
+            @Argument(value = "displayName") String[] displayName,
+            CommandSender ctx
+    ) {
+        if (!GunGame.getInstance().getArenaLoader().arenaExists(name)) {
+            GunGame.getTexter().responseLang(ctx, "arena-not-exists", Map.of("arena", name));
+            return;
+        }
+
+        String joinedDisplayName = String.join(" ", displayName);
+        GunGame.getInstance().getArenaLoader().setArenaDisplayName(name, joinedDisplayName);
+        GunGame.getTexter().responseLang(ctx, "arena-name-set", Map.of("arena", name));
     }
 
     @Command(ConfigDb.COMMAND_BASE + " setup enable <name>")

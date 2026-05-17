@@ -14,8 +14,3 @@ depend:
 
 softdepend: [ PlaceholderAPI, Multiverse-Core, LiteEco ]
 
-commands:
-    xagui:
-        description: XaGui control center
-        usage: /xagui
-

@@ -1,19 +1,22 @@
 package eu.xap3y.gungame.service;
 
-import com.cryptomorin.xseries.XPotion;
 import eu.xap3y.gungame.GunGame;
+import eu.xap3y.gungame.api.enums.LeaderboardType;
 import eu.xap3y.gungame.database.dao.PlayerDao;
 import eu.xap3y.gungame.database.dto.PlayerStatsDto;
+import eu.xap3y.gungame.model.Leaderboard;
 import eu.xap3y.gungame.model.LevelProgress;
 import eu.xap3y.gungame.model.Progression;
 import org.bukkit.Bukkit;
-import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 public class LevelingService {
     private final ConcurrentMap<UUID, LevelProgress> progress = new ConcurrentHashMap<>();
@@ -27,6 +30,24 @@ public class LevelingService {
 
     public LevelProgress get(UUID uuid) {
         return progress.computeIfAbsent(uuid, id -> new LevelProgress(0));
+    }
+
+    public Leaderboard getLeaderBoard(int maxEntries) {
+
+        LinkedList<Leaderboard.Entry> entries = new LinkedList<>();
+
+        progress.entrySet().stream()
+                .sorted((e1, e2) -> Integer.compare(e2.getValue().getLevel(), e1.getValue().getLevel())) // sort by level desc
+                .limit(maxEntries)
+                .forEachOrdered(entry -> {
+                    String name = Bukkit.getOfflinePlayer(entry.getKey()).getName();
+                    if (name == null) {
+                        name = "N/A";
+                    }
+                    entries.add(new Leaderboard.Entry(name, entry.getValue().getLevel(), entries.size() + 1));
+                });
+
+        return new Leaderboard(LeaderboardType.STAGE, entries);
     }
 
     public int getKillstreak(UUID p0) {

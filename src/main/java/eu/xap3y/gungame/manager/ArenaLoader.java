@@ -54,6 +54,19 @@ public class ArenaLoader {
         }
     }
 
+    public void setArenaDisplayName(@NotNull String arenaName, @NotNull String displayName) {
+        if (!arenaExists(arenaName)) {
+            return;
+        }
+        arenasConfig.set(arenaName + ".displayName", displayName);
+        saveArenas();
+
+        arenaPool.stream()
+                .filter(arena -> arena.getArenaName().equals(arenaName))
+                .findFirst()
+                .ifPresent(arena -> arena.setDisplayName(displayName));
+    }
+
     public boolean arenaExists(@NotNull String arenaName) {
         return arenasConfig.contains(arenaName);
     }

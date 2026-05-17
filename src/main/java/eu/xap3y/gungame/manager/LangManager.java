@@ -1,6 +1,7 @@
 package eu.xap3y.gungame.manager;
 
 import eu.xap3y.gungame.GunGame;
+import eu.xap3y.gungame.api.enums.LeaderboardType;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -29,6 +30,7 @@ public class LangManager {
     public void reload() {
         GunGame.getTexter().logPos();
         langYamlConfig = YamlConfiguration.loadConfiguration(langFile);
+        LeaderboardType.reloadNames();
     }
 
 

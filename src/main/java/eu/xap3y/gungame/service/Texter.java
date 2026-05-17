@@ -81,6 +81,10 @@ public class Texter {
         }
     }
 
+    public void response(CommandSender p0, String text, boolean wPrefix) {
+        response(p0, text, new TextModifierDto(wPrefix, true));
+    }
+
     public void responseLang(CommandSender p0, String path) {
         responseLang(p0, path, null, null);
     }

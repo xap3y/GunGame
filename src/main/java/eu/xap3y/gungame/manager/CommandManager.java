@@ -1,6 +1,7 @@
 package eu.xap3y.gungame.manager;
 
 import eu.xap3y.gungame.GunGame;
+import eu.xap3y.gungame.api.enums.LeaderboardType;
 import eu.xap3y.gungame.model.Arena;
 import org.bukkit.command.CommandSender;
 import org.incendo.cloud.SenderMapper;
@@ -15,6 +16,7 @@ import org.incendo.cloud.paper.util.sender.Source;
 import org.incendo.cloud.suggestion.Suggestion;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -56,6 +58,13 @@ public class CommandManager {
         manager.parserRegistry().registerSuggestionProvider("maps", (ctx, input) -> {
             List<Suggestion> suggestions = GunGame.getInstance().getArenaLoader().loadAllArenas().stream()
                     .map(id -> Suggestion.suggestion(id.getArenaName()))
+                    .toList();
+            return CompletableFuture.completedFuture(suggestions);
+        });
+
+        manager.parserRegistry().registerSuggestionProvider("lb", (ctx, input) -> {
+            List<Suggestion> suggestions = Arrays.stream(LeaderboardType.values()).toList().stream()
+                    .map(id -> Suggestion.suggestion(id.name().toLowerCase()))
                     .toList();
             return CompletableFuture.completedFuture(suggestions);
         });

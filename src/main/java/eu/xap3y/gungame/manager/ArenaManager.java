@@ -1,7 +1,6 @@
 package eu.xap3y.gungame.manager;
 
 import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.messages.Titles;
 import eu.xap3y.gungame.GunGame;
 import eu.xap3y.gungame.api.event.MapChangeEvent;
 import eu.xap3y.gungame.model.Arena;
@@ -12,6 +11,7 @@ import eu.xap3y.gungame.util.UpgradeUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -64,7 +64,7 @@ public class ArenaManager {
         resetArena();
         currentArena = arena;
         arena.getSpawn().getWorld().setSpawnLocation(arena.getSpawn().getBlockX(), arena.getSpawn().getBlockY(), arena.getSpawn().getBlockZ());
-        Bukkit.getScheduler().runTask(GunGame.getInstance(), () -> arena.getSpawn().getWorld().setTime(0));
+        Bukkit.getScheduler().runTask(GunGame.getInstance(), () -> arena.getSpawn().getWorld().setTime(1000));
         arenaRotationStartTime = LocalDateTime.now();
         restartArenaRotationTask();
     }
@@ -164,13 +164,22 @@ public class ArenaManager {
                     preparePlayer(player);
                 }
             }, 10L);
+            loadPlayerDb(player);
             return;
         } else {
             player.teleport(currentArena.getSpawn());
             preparePlayer(player);
         }
 
+        Bukkit.getScheduler().runTask(GunGame.getInstance(), () -> {
+            player.setRespawnLocation(currentArena.getSpawn(), true);
+        });
+
         GunGame.getTexter().logPos();
+        loadPlayerDb(player);
+    }
+
+    private void loadPlayerDb(@NotNull LivingEntity player) {
         GunGame.getInstance().getDatabaseManager().getPlayerDao().loadOrCreate(player)
                 .publishOn(Schedulers.boundedElastic())
 
@@ -200,6 +209,10 @@ public class ArenaManager {
         GunGame.getInstance().getLevelingService().reset(player.getUniqueId());
     }
 
+    public Arena getNextArena() {
+        return GunGame.getInstance().getArenaLoader().getArenaPool().peek();
+    }
+
     public void rotateArenaPre() {
         String countdownStr = GunGame.getInstance().getLangManager().get("arena-map-change.countdown", "&7Next map change in &e{time}&7 seconds.");
 
@@ -212,6 +225,9 @@ public class ArenaManager {
                     cancel();
                     rotateArena();
                     return;
+                }
+                if (secs == 5) {
+                    Bukkit.getScheduler().runTask(GunGame.getInstance(), () -> GunGame.getInstance().getArenaManager().getNextArena().getSpawn().getWorld().setTime(1000));
                 }
                 if (secs == 15 || secs == 10 || secs <= 5) {
                     String msg = countdownStr.replace("{time}", String.valueOf(secs));
@@ -252,24 +268,27 @@ public class ArenaManager {
             }
             changeArena(arena);
             String arenaMsg = GunGame.getInstance().getLangManager().get("arena-rotated", "&6Arena has been rotated to &e{arena}&6!");
-            arenaMsg = arenaMsg.replace("{arena}", arena.getArenaName());
+            arenaMsg = arenaMsg.replace("{arena}", arena.getDisplayName());
             GunGame.getTexter().broadcast(arenaMsg);
 
             String titleMsg = GunGame.getInstance().getLangManager().get("arena-map-change.title", "&6Arena Rotated!")
-                    .replace("{arena}", arena.getArenaName());
+                    .replace("{arena}", arena.getDisplayName());
 
             getPlayers()
                     .stream()
                     .filter(Player::isOnline)
                     .forEach(p -> {
                         p.setVelocity(p.getVelocity().zero());
+                        GunGame.getInstance().getServer().getScheduler().runTask(GunGame.getInstance(), () -> {
+                            p.setRespawnLocation(arena.getSpawn(), true);
+                        });
                         ConfigDb.FALL_DAMAGE_CANCEL.add(p.getUniqueId());
                         GunGame.getInstance().getServer().getScheduler().runTaskLaterAsynchronously(GunGame.getInstance(), () -> {
                             ConfigDb.FALL_DAMAGE_CANCEL.remove(p.getUniqueId());
                         }, 10L);
                         ActionBar.sendActionbar(p, "");
-                        //p.sendTitle(Texter.colored(titleMsg), "", 20, 70, 20);
-                        Titles.sendTitle(p, 20, 70, 20, Texter.colored(titleMsg), "");
+                        p.sendTitle(Texter.colored(titleMsg), "", 20, 70, 20);
+                        //Titles.sendTitle(p, 20, 70, 20, Texter.colored(titleMsg), "");
                         XSound.BLOCK_NOTE_BLOCK_PLING.play(p, .8f, 1f);
                     });
 

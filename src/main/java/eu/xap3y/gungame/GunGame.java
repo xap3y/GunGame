@@ -4,10 +4,12 @@ import com.cryptomorin.xseries.XSound;
 import com.github.fierioziy.particlenativeapi.api.ParticleNativeAPI;
 import com.github.fierioziy.particlenativeapi.core.ParticleNativeCore;
 import eu.xap3y.gungame.api.iface.ScoreboardInterface;
+import eu.xap3y.gungame.command.DebugCommand;
 import eu.xap3y.gungame.command.DevCommand;
 import eu.xap3y.gungame.command.RootCommand;
 import eu.xap3y.gungame.command.SetupCommand;
 import eu.xap3y.gungame.database.DatabaseManager;
+import eu.xap3y.gungame.hook.PapiExpansion;
 import eu.xap3y.gungame.listener.*;
 import eu.xap3y.gungame.manager.*;
 import eu.xap3y.gungame.model.Progression;
@@ -16,8 +18,10 @@ import eu.xap3y.gungame.service.LevelingService;
 import eu.xap3y.gungame.service.Texter;
 import eu.xap3y.gungame.util.ConfigDb;
 import eu.xap3y.xagui.XaGui;
+import eu.xap3y.xagui.XaGuiPlugin;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.event.Listener;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.PluginManager;
@@ -69,7 +73,7 @@ public final class GunGame extends JavaPlugin {
 
         //  Creating parser & Parsing command classes below  \\
         CommandManager cmdManager = new CommandManager(true);
-        cmdManager.parseLegacy(new RootCommand(), new SetupCommand(), new DevCommand());
+        cmdManager.parseLegacy(new RootCommand(), new SetupCommand(), new DevCommand(), new DebugCommand());
         //  Saving if not exists & Reloading config file  \\
         ConfigManager.reloadConfig();
 
@@ -102,10 +106,14 @@ public final class GunGame extends JavaPlugin {
 
         // Load arenas (maps) from yml file and refresh arena pool
         arenaLoader = new ArenaLoader(new File(getDataFolder(), "arenas.yml"));
-        arenaLoader.refreshArenaPool();
 
-        // Start map rotation task
-        arenaManager.restartArenaRotationTask();
+        this.getServer().getGlobalRegionScheduler().execute(this, () -> {
+            arenaLoader.refreshArenaPool();
+
+            // Start map rotation task
+            arenaManager.restartArenaRotationTask();
+        });
+
 
         // Test if plugin is running on PaperMc or other platform with adventure api
         try {
@@ -161,12 +169,26 @@ public final class GunGame extends JavaPlugin {
         }, 0L, 20L);
 
         //  Initializing XaGUI  \\
-        xagui = new XaGui(this);
-        xagui.injectCommand();
+        xagui = XaGuiPlugin.getXaGui();
 
         xagui.setCloseButtonSound(XSound.BLOCK_COPPER_DOOR_CLOSE.or(XSound.BLOCK_WOODEN_DOOR_CLOSE).get());
 
         registerPermission(ConfigDb.PERMISSION_NODE + "chat.bypass");
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (World world : GunGame.getInstance().getArenaLoader().getArenaPool().stream().map(a -> a.getSpawn().getWorld()).toList()) {
+                    world.setTime(1000);
+                    world.setStorm(false);
+                    world.setThundering(false);
+                }
+            }
+        }.runTaskTimer(this, 0L, 120L);
+
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            new PapiExpansion().register();
+        }
     }
 
     private void registerPermission(String permission) {
@@ -182,7 +204,8 @@ public final class GunGame extends JavaPlugin {
                 new EntityDamageListener(),
                 new ProjectileLaunchListener(),
                 new WandListener(),
-                new ChatListener()
+                new ChatListener(),
+                new OtherListener()
         };
 
         for (Listener listener : listeners) {

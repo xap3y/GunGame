@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 public class ShopGui extends VirtualMenu<String> {
 
     public ShopGui() {
-        super("&bGunGame Shop", 3, GunGame.getInstance().getXagui());
+        super(GunGame.getInstance().getLangManager().get("gui-titles.shop", "&b&lShop"), 3, GunGame.getInstance().getXagui());
     }
 
     @Override

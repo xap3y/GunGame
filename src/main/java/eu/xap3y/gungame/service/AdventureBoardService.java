@@ -122,7 +122,7 @@ public class AdventureBoardService implements ScoreboardInterface<FastBoard> {
         PlayerStatsDto cachedDto = GunGame.getInstance().getDatabaseManager().getPlayerDao().getPlayerCache().getOrDefault(p0, new PlayerStatsDto());
 
         Arena a = GunGame.getInstance().getArenaManager().getCurrentArena();
-        String currentArena = (a == null) ? "&cN/A" : a.getArenaName();
+        String currentArena = (a == null) ? "&cN/A" : a.getDisplayName();
 
         String mapTime;
         long timeLeft = GunGame.getInstance().getArenaManager().getSecondsUntilNextArena();

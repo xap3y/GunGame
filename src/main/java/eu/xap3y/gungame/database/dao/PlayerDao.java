@@ -1,16 +1,17 @@
 package eu.xap3y.gungame.database.dao;
 
 import eu.xap3y.gungame.GunGame;
+import eu.xap3y.gungame.api.enums.LeaderboardType;
 import eu.xap3y.gungame.api.enums.UpgradeEnum;
 import eu.xap3y.gungame.database.DatabaseManager;
 import eu.xap3y.gungame.database.dto.PlayerDto;
 import eu.xap3y.gungame.database.dto.PlayerStatsDto;
 import eu.xap3y.gungame.database.dto.PlayerUpgradesDto;
+import eu.xap3y.gungame.model.Leaderboard;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.mariadb.jdbc.Statement;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -19,6 +20,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,6 +50,82 @@ public class PlayerDao {
 
     public Mono<PlayerDto> getStrict(UUID uuid) {
         return getOrCreate(uuid, null);
+    }
+
+
+    private int getStatByType(PlayerStatsDto stats, LeaderboardType type) {
+        return switch (type) {
+            case KD -> stats.getDeaths() == 0 ? stats.getKills() : (int) ((double) stats.getKills() / stats.getDeaths());
+            case KILLS -> stats.getKills();
+            case DEATHS -> stats.getDeaths();
+            case KILL_STREAK -> stats.getKillStreak();
+            case COINS -> stats.getCoins();
+            case STAGE -> 0;
+        };
+    }
+
+    public Leaderboard getLeaderBoardFromCache(LeaderboardType type, int maxEntries) {
+        if (type == LeaderboardType.STAGE) {
+            return GunGame.getInstance().getLevelingService().getLeaderBoard(maxEntries);
+        }
+
+        LinkedList<Leaderboard.Entry> entries = new LinkedList<>();
+        // Sort the cache by the requested stat and return a new Leaderboard object with the top entries
+        playerCache.entrySet().stream()
+                .sorted((e1, e2) -> Integer.compare(getStatByType(e2.getValue(), type), getStatByType(e1.getValue(), type)))
+                .limit(maxEntries)
+                .forEachOrdered(e -> entries.add(new Leaderboard.Entry(
+                        Bukkit.getPlayer(e.getKey()).getName(),
+                        getStatByType(e.getValue(), type),
+                        entries.size() + 1
+                )));
+
+        return new Leaderboard(type, entries);
+    }
+
+    public Mono<Leaderboard> getLeaderBoard(LeaderboardType type, int maxEntries) {
+
+        if (type == LeaderboardType.KD) {
+            return Mono.fromCallable(() -> getLeaderBoardFromCache(type, maxEntries))
+                    .subscribeOn(Schedulers.boundedElastic());
+        }
+
+        return Mono.fromCallable(() -> {
+            // Use LinkedHashMap to preserve the SQL "ORDER BY" sequence
+            LinkedList<Leaderboard.Entry> entries = new LinkedList<>();
+            String columnName = type.name().toLowerCase();
+
+            if (columnName.equals("kill_streak")) {
+                columnName = "best_kill_streak";
+            } else if (columnName.equals("stage")) {
+                columnName = "best_stage";
+            }
+
+            String sql = "SELECT p.uuid, p.username, s." + columnName + " FROM gg_statistics s " +
+                    "JOIN gg_players p ON s.player_id = p.id " +
+                    "ORDER BY s." + columnName + " DESC LIMIT ?";
+
+            try (Connection conn = dbManager.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+                ps.setInt(1, maxEntries);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String name = rs.getString("p.username");
+                        int value = rs.getInt("s." + columnName);
+                        if (value < 1) continue;
+                        entries.add(new Leaderboard.Entry(name, value, entries.size() + 1));
+                    }
+                }
+            } catch (SQLException e) {
+                GunGame.getTexter().debugLog("Error fetching leaderboard " + type + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            return new Leaderboard(type, entries);
+
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     public Mono<Void> updateUpgradesFromCache(UUID uuid) {

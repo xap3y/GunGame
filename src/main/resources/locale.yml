@@ -23,12 +23,30 @@ join-message: "&a{player} has joined the game!"
 quit-message: "&c{player} has quit the game!"
 death-message: "&c{player} died!"
 death-by-player-message: "&c{player} was killed by &e{killer}&c!"
+arena-name-set: "&aArena name set!"
+leaderboard-disabled: "&cThe leaderboard is currently disabled!"
+
+leaderboard:
+
+    labels:
+        kd: "&cK/D"
+        kills: "&6Kills"
+        deaths: "&cDeaths"
+        killstreak: "&6KillStreak"
+        coins: "&eCoins"
+        stage: "&6Stage"
+
+gui-titles:
+    shop: "&a&lGunGame Shop"
+    upgrades: "&a&lUpgrade Shop"
+    stats: "&a&lPlayer Stats"
 
 actionbar:
     kill: "&aYou killed &e{player}&a! &6You are now level &e{stage}&6!"
     kill-double: "&aYou killed &e{player}&a! &6You are now level &e{stage}&6! &5&l**DOUBLE UPGRADE**"
     death-by-player: "&cYou were killed by &e{killer}&c!"
-    death: "&cYou were killed!"
+    downgrade: "&c&l↓ You downgraded ↓"
+    death: "&c&lYou died"
 
 arena-map-change:
     title: "&6&l{arena}"
